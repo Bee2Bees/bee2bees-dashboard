@@ -16,6 +16,13 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function formatPhone(phone) {
+  let p = String(phone).replace(/[\s\-\(\)\+]/g, ''); // remove spaces, dashes, brackets, +
+  if (p.startsWith('0')) p = p.slice(1);               // remove leading 0
+  if (p.length === 10) p = '91' + p;                   // 10-digit Indian mobile → add 91
+  return p;
+}
+
 // ─── Send a WhatsApp template message ────────────────────────────────────────
 async function sendTemplateMessage(to, templateName, language, variables) {
   const components = [];
@@ -261,10 +268,11 @@ router.post('/campaigns/:id/send', requireAuth, async (req, res) => {
     let sentCount = 0;
     let failedCount = 0;
 
-    for (const phone of campaign.contacts) {
+    for (const rawPhone of campaign.contacts) {
+      const phone = formatPhone(rawPhone);
       try {
         // Fetch contact name for template variable {{1}}
-        const contact = await Contact.findOne({ phone }).lean();
+        const contact = await Contact.findOne({ $or: [{ phone: rawPhone }, { phone }] }).lean();
         const contactName = contact?.name || 'Agent';
 
         await sendTemplateMessage(
@@ -276,7 +284,7 @@ router.post('/campaigns/:id/send', requireAuth, async (req, res) => {
         sentCount++;
       } catch (err) {
         failedCount++;
-        console.error(`Campaign send failed for ${phone}:`, err.response?.data || err.message);
+        console.error(`Campaign send failed for ${rawPhone} (formatted: ${phone}):`, err.response?.data || err.message);
       }
 
       // Update progress every 10 messages
