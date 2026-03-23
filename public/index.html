@@ -1391,6 +1391,16 @@ Body (JSON):
         <textarea class="form-control" id="campMessage" placeholder="Template message preview..." rows="3"></textarea>
       </div>
       <div class="form-group">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;">
+          <input type="checkbox" id="campUseVariables" style="width:16px;height:16px;">
+          Template में <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px;">{{1}}</code> variable है (contact name)
+        </label>
+        <p style="font-size:12px;color:#9ca3af;margin-top:4px;">
+          Check करें अगर template में <code>{{1}}</code> है — contact का नाम automatically insert होगा।
+          <em>hello_world जैसे simple templates के लिए unchecked रखें।</em>
+        </p>
+      </div>
+      <div class="form-group">
         <label>Contacts</label>
         <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
           <button type="button" class="btn btn-secondary btn-sm camp-select-btn active" data-mode="all" onclick="setCampContactMode(this)">
@@ -2484,6 +2494,7 @@ function openNewCampaignModal() {
   document.getElementById('campTemplate').value = '';
   document.getElementById('campMessage').value = '';
   document.getElementById('campLang').value = 'en';
+  document.getElementById('campUseVariables').checked = false;
   campContactMode = 'all';
   document.querySelectorAll('.camp-select-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.camp-select-btn[data-mode="all"]').classList.add('active');
@@ -2537,6 +2548,7 @@ async function saveCampaign() {
   const templateName = document.getElementById('campTemplate').value.trim();
   const message = document.getElementById('campMessage').value.trim();
   const templateLanguage = document.getElementById('campLang').value;
+  const useVariables = document.getElementById('campUseVariables').checked;
 
   if (!name) { showToast('Campaign name जरूरी है', 'error'); return; }
   if (!templateName) { showToast('Template name जरूरी है', 'error'); return; }
@@ -2568,7 +2580,7 @@ async function saveCampaign() {
     const res = await fetch('/api/campaigns', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, templateName, templateLanguage, message, contacts: contactPhones })
+      body: JSON.stringify({ name, templateName, templateLanguage, message, useVariables, contacts: contactPhones })
     });
     const data = await res.json();
     if (data.success) {

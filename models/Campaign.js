@@ -5,6 +5,7 @@ const campaignSchema = new mongoose.Schema({
   message: { type: String, default: '' },
   templateName: { type: String, default: '' },
   templateLanguage: { type: String, default: 'en' },
+  useVariables: { type: Boolean, default: false }, // true = send {{1}} = contact name
   contacts: [{ type: String }],
   status: {
     type: String,

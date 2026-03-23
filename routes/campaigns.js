@@ -178,7 +178,7 @@ router.get('/campaigns', requireAuth, async (req, res) => {
 // POST /api/campaigns
 router.post('/campaigns', requireAuth, async (req, res) => {
   try {
-    const { name, message, templateName, templateLanguage, contacts } = req.body;
+    const { name, message, templateName, templateLanguage, contacts, useVariables } = req.body;
     if (!name) return res.status(400).json({ error: 'Campaign name required' });
 
     const campaign = await Campaign.create({
@@ -186,6 +186,7 @@ router.post('/campaigns', requireAuth, async (req, res) => {
       message: message || '',
       templateName: templateName || '',
       templateLanguage: templateLanguage || 'en',
+      useVariables: useVariables === true || useVariables === 'true',
       contacts: contacts || [],
       totalContacts: (contacts || []).length,
       status: 'draft'
@@ -275,11 +276,13 @@ router.post('/campaigns/:id/send', requireAuth, async (req, res) => {
         const contact = await Contact.findOne({ $or: [{ phone: rawPhone }, { phone }] }).lean();
         const contactName = contact?.name || 'Agent';
 
+        // Only pass variables if template uses parameters like {{1}}
+        const variables = campaign.useVariables ? [contactName] : [];
         await sendTemplateMessage(
           phone,
           campaign.templateName,
           campaign.templateLanguage || 'en',
-          [contactName]
+          variables
         );
         sentCount++;
       } catch (err) {
