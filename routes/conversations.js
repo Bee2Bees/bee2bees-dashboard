@@ -5,7 +5,7 @@ const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 
 const WA_TOKEN = process.env.WHATSAPP_TOKEN;
-const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const WA_PHONE_ID = process.env.PHONE_NUMBER_ID;
 
 async function sendWhatsAppMessage(to, text) {
   const response = await axios.post(
