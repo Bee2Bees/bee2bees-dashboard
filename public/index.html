@@ -1224,16 +1224,24 @@ function showApp() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
 
-  // Set user info
+  // Set user info — derive first name from email (e.g. tara93joshi@gmail.com → "Tara")
   const u = state.user;
-  document.getElementById('userName').textContent = u.name || u.email;
+  function firstNameFromEmail(email) {
+    if (!email) return 'User';
+    const local = email.split('@')[0];          // "tara93joshi" or "sachin"
+    const letters = local.replace(/[^a-zA-Z]/g, ''); // strip numbers
+    const name = letters.charAt(0).toUpperCase() + letters.slice(1).toLowerCase();
+    return name || email;
+  }
+  const displayName = firstNameFromEmail(u.email);
+  document.getElementById('userName').textContent = displayName;
   document.getElementById('userEmail').textContent = u.email || '';
 
   const avatarEl = document.getElementById('userAvatar');
   if (u.photo) {
     avatarEl.innerHTML = `<img src="${u.photo}" alt="">`;
   } else {
-    avatarEl.textContent = (u.name || u.email || '?')[0].toUpperCase();
+    avatarEl.textContent = displayName[0].toUpperCase();
   }
 
   // Load initial data

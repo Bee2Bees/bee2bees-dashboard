@@ -114,7 +114,7 @@ router.post('/:phone/takeover', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/conversations/:phone/handback - hand back to bot
+// POST /api/conversations/:phone/handback - silent hand back to bot
 router.post('/:phone/handback', requireAuth, async (req, res) => {
   try {
     const phone = req.params.phone;
@@ -135,13 +135,14 @@ router.post('/:phone/handback', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
 
-    // Log system message
+    // Silent handback — no WhatsApp message sent to agent
+    // Log internal system note only
     await Message.create({
       conversationId: conversation._id,
       agentPhone: phone,
       direction: 'outgoing',
       sentBy: 'system',
-      message: `🤖 ${teamMember} ने Bot को वापस सौंप दिया`,
+      message: `🤖 Bot को वापस दिया गया (by ${teamMember})`,
       timestamp: new Date(),
       isRead: true
     });
