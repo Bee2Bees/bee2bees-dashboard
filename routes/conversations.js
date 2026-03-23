@@ -217,4 +217,29 @@ router.post('/:phone/send', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/conversations/:phone/status - bot checks if conversation is taken over
+// No login required; validated by X-Dashboard-Secret header
+router.get('/:phone/status', (req, res, next) => {
+  const secret = req.headers['x-dashboard-secret'];
+  if (secret !== (process.env.DASHBOARD_WEBHOOK_SECRET || 'bee2bees_dashboard_2026')) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  next();
+}, async (req, res) => {
+  try {
+    const phone = req.params.phone;
+    const conversation = await Conversation.findOne({ agentPhone: phone }).lean();
+    if (!conversation) {
+      return res.json({ status: 'bot', assignedTo: null });
+    }
+    res.json({
+      status: conversation.status || 'bot',
+      assignedTo: conversation.assignedTo || null,
+    });
+  } catch (err) {
+    console.error('Error fetching conversation status:', err);
+    res.status(500).json({ error: 'Failed to fetch status' });
+  }
+});
+
 module.exports = router;
