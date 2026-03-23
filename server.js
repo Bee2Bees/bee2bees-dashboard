@@ -17,6 +17,9 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const DASHBOARD_SECRET = process.env.DASHBOARD_WEBHOOK_SECRET || 'bee2bees_dashboard_2026';
 
+// Trust reverse proxy (required for Render/Heroku so OAuth callback URL uses https://)
+app.set('trust proxy', 1);
+
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(morgan('dev'));
 app.use(cors({
@@ -32,7 +35,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
 }));
