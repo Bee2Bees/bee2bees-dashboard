@@ -888,6 +888,17 @@
     }
     .db-error-banner.hidden { display: none; }
 
+    .reconnect-banner {
+      background: #92400e;
+      color: #fef3c7;
+      padding: 6px 20px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .reconnect-banner.hidden { display: none; }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -966,6 +977,9 @@
   <div class="main-content">
     <div id="dbErrorBanner" class="db-error-banner hidden">
       ⚠️ Database से कनेक्शन नहीं है। कुछ features काम नहीं करेंगे।
+    </div>
+    <div id="reconnectBanner" class="reconnect-banner hidden">
+      🔄 Reconnecting...
     </div>
 
     <!-- ── CONVERSATIONS PAGE ── -->
@@ -1815,13 +1829,21 @@ function renderCharts(s) {
 // ═══════════════════════════════════════════════════════════
 // POLLING
 // ═══════════════════════════════════════════════════════════
+let _pollConnected = true;
+
+function setReconnecting(show) {
+  document.getElementById('reconnectBanner').classList.toggle('hidden', !show);
+}
+
 function startPolling() {
   if (state.polling) clearInterval(state.polling);
-  state.polling = setInterval(async () => {
-    await loadConversations();
-    // If a conversation is open, refresh it silently
-    if (state.currentPhone) {
-      try {
+
+  async function poll() {
+    try {
+      await loadConversations();
+
+      // If a conversation is open, refresh it silently
+      if (state.currentPhone) {
         const res = await fetch(`/api/conversations/${encodeURIComponent(state.currentPhone)}`);
         const data = await res.json();
         if (data.success) {
@@ -1830,9 +1852,29 @@ function startPolling() {
             renderChat(data.data.conversation, data.data.messages);
           }
         }
-      } catch (e) {}
+      }
+
+      // Connection restored
+      if (!_pollConnected) {
+        _pollConnected = true;
+        setReconnecting(false);
+      }
+    } catch (e) {
+      // Network hiccup — show indicator and retry in 10 seconds
+      if (_pollConnected) {
+        _pollConnected = false;
+        setReconnecting(true);
+      }
+      clearInterval(state.polling);
+      state.polling = null;
+      setTimeout(() => {
+        startPolling();
+      }, 10000);
     }
-  }, 5000);
+  }
+
+  poll(); // run immediately on start
+  state.polling = setInterval(poll, 5000);
 }
 
 // ═══════════════════════════════════════════════════════════
