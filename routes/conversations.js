@@ -1,7 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
+
+const WA_TOKEN = process.env.WHATSAPP_TOKEN;
+const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+async function sendWhatsAppMessage(to, text) {
+  const response = await axios.post(
+    `https://graph.facebook.com/v22.0/${WA_PHONE_ID}/messages`,
+    {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'text',
+      text: { body: text }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${WA_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  return response.data;
+}
 
 // Auth middleware
 function requireAuth(req, res, next) {
@@ -130,7 +153,7 @@ router.post('/:phone/handback', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/conversations/:phone/send - team sends manual message
+// POST /api/conversations/:phone/send - team sends manual message via WhatsApp
 router.post('/:phone/send', requireAuth, async (req, res) => {
   try {
     const phone = req.params.phone;
@@ -146,6 +169,23 @@ router.post('/:phone/send', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
 
+    // Send via WhatsApp API
+    let whatsappError = null;
+    try {
+      await sendWhatsAppMessage(phone, message.trim());
+    } catch (waErr) {
+      whatsappError = waErr.response?.data?.error?.message || waErr.message;
+      console.error('WhatsApp API error:', waErr.response?.data || waErr.message);
+    }
+
+    if (whatsappError) {
+      return res.status(502).json({
+        error: 'WhatsApp message failed',
+        detail: whatsappError
+      });
+    }
+
+    // Save to MongoDB
     const newMessage = await Message.create({
       conversationId: conversation._id,
       agentPhone: phone,
@@ -156,12 +196,15 @@ router.post('/:phone/send', requireAuth, async (req, res) => {
       isRead: true
     });
 
+    // Update conversation: set status to human, update last message
     await Conversation.updateOne(
       { agentPhone: phone },
       {
         $set: {
           lastMessage: message.trim(),
-          lastMessageTime: new Date()
+          lastMessageTime: new Date(),
+          status: 'human',
+          assignedTo: conversation.assignedTo || teamMember
         }
       }
     );
