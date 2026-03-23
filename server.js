@@ -170,6 +170,59 @@ app.post('/api/webhook/message', async (req, res) => {
   }
 });
 
+// ─── Webhook: Lead from bot ───────────────────────────────────────────────────
+app.post('/api/webhook/lead', async (req, res) => {
+  try {
+    const secret = req.headers['x-dashboard-secret'];
+    if (secret !== DASHBOARD_SECRET) {
+      return res.status(403).json({ error: 'Invalid webhook secret' });
+    }
+    if (!dbConnected) return res.status(503).json({ error: 'Database unavailable' });
+
+    const {
+      agentPhone, agentName, agentCompany, destination,
+      checkIn, checkOut, nights, adults, kids, rooms, mealPlan,
+      quoteAmount, stage, source, queryText, responseText
+    } = req.body;
+
+    if (!agentPhone) return res.status(400).json({ error: 'agentPhone required' });
+
+    const Lead = require('./models/Lead');
+    const historyEntry = queryText
+      ? [{ query: queryText || '', response: responseText || '', timestamp: new Date() }]
+      : [];
+
+    const lead = await Lead.findOneAndUpdate(
+      { agentPhone, stage: { $nin: ['completed', 'lost'] } },
+      {
+        $set: {
+          agentName: agentName || '',
+          agentCompany: agentCompany || '',
+          destination: destination || '',
+          checkIn: checkIn || null,
+          checkOut: checkOut || null,
+          nights: nights || 0,
+          adults: adults || 0,
+          kids: kids || 0,
+          rooms: rooms || 0,
+          mealPlan: mealPlan || '',
+          quoteAmount: quoteAmount || 0,
+          stage: stage || 'new_query',
+          source: source || 'whatsapp_bot',
+          lastActivityAt: new Date()
+        },
+        $push: historyEntry.length ? { queryHistory: { $each: historyEntry } } : {}
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    res.json({ success: true, leadId: lead._id });
+  } catch (err) {
+    console.error('Lead webhook error:', err);
+    res.status(500).json({ error: 'Failed to process lead webhook' });
+  }
+});
+
 // ─── Stats Route ──────────────────────────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
   if (!req.isAuthenticated()) {

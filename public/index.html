@@ -528,36 +528,80 @@
     }
 
     /* ─────────────────────────────────────────
-       LEADS PAGE
+       LEADS / CRM KANBAN PAGE
     ───────────────────────────────────────── */
     #leadsPage {
-      flex-direction: column;
+      flex-direction: row;
       overflow: hidden;
+    }
+
+    /* Stats bar */
+    .crm-stats-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .crm-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+      cursor: pointer;
+    }
+    .crm-stat-item:hover .crm-stat-val { color: var(--primary-dark); }
+    .crm-stat-val { font-size: 22px; font-weight: 800; color: var(--text); }
+    .crm-stat-lbl { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 1px; }
+    .crm-stat-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+
+    /* Kanban area */
+    .kanban-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .kanban-toolbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     .kanban-board {
       display: flex;
-      gap: 12px;
-      padding: 16px;
+      gap: 10px;
+      padding: 14px;
       overflow-x: auto;
       flex: 1;
       align-items: flex-start;
     }
 
     .kanban-col {
-      min-width: 240px;
-      max-width: 260px;
+      min-width: 230px;
+      max-width: 230px;
       background: var(--bg);
       border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
-      max-height: calc(100vh - 140px);
+      max-height: calc(100vh - 200px);
+      flex-shrink: 0;
+      transition: background 0.2s;
     }
+    .kanban-col.drag-over { background: #dbeafe; }
 
     .kanban-col-header {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -567,54 +611,116 @@
     .kanban-col-header .col-count {
       background: rgba(0,0,0,0.15);
       color: inherit;
-      padding: 2px 8px;
+      padding: 2px 6px;
       border-radius: 10px;
       font-size: 11px;
     }
 
-    .col-new { background: #ede9fe; color: #5b21b6; }
-    .col-follow { background: #fef3c7; color: #92400e; }
-    .col-quote { background: #dbeafe; color: #1e40af; }
-    .col-booking { background: #d1fae5; color: #065f46; }
-    .col-payment { background: #fce7f3; color: #9d174d; }
+    .col-new_query       { background: #ede9fe; color: #5b21b6; }
+    .col-quote_sent      { background: #dbeafe; color: #1e40af; }
+    .col-changes_requested { background: #fef3c7; color: #92400e; }
+    .col-follow_up       { background: #ffedd5; color: #9a3412; }
+    .col-booking_confirmed { background: #d1fae5; color: #065f46; }
+    .col-advance_received { background: #dcfce7; color: #166534; }
+    .col-voucher_sent    { background: #cffafe; color: #164e63; }
+    .col-completed       { background: #f0fdf4; color: #14532d; }
+    .col-lost            { background: #f3f4f6; color: #6b7280; }
 
     .kanban-cards {
-      padding: 8px;
+      padding: 6px;
       overflow-y: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
+      min-height: 60px;
     }
 
+    /* Lead card */
     .lead-card {
       background: var(--white);
       border-radius: var(--radius);
-      padding: 12px;
-      cursor: pointer;
+      padding: 10px 12px;
+      cursor: grab;
       box-shadow: var(--shadow);
-      transition: all 0.2s;
+      transition: all 0.15s;
       border: 1px solid var(--border);
+      user-select: none;
     }
     .lead-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    .lead-card-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
-    .lead-card-company { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+    .lead-card.dragging { opacity: 0.4; cursor: grabbing; }
+    .lead-card-name { font-size: 12px; font-weight: 700; margin-bottom: 1px; }
+    .lead-card-company { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
     .lead-card-dest {
-      font-size: 12px;
-      color: #374151;
+      font-size: 11px; color: #374151;
       background: var(--bg);
-      padding: 3px 8px;
-      border-radius: 12px;
+      padding: 2px 6px;
+      border-radius: 10px;
       display: inline-block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .lead-card-bottom {
+    .lead-card-row {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-top: 4px;
+    }
+    .lead-card-amount { font-size: 11px; font-weight: 700; color: var(--primary-dark); }
+    .lead-card-age { font-size: 10px; padding: 1px 5px; border-radius: 8px; }
+    .age-fresh { background: #d1fae5; color: #065f46; }
+    .age-warn  { background: #fef3c7; color: #92400e; }
+    .age-stale { background: #fee2e2; color: #991b1b; }
+    .lead-card-assigned { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+    .kanban-empty { text-align: center; color: var(--text-muted); font-size: 11px; padding: 16px 8px; }
+
+    /* Lead detail panel */
+    .lead-detail-panel {
+      width: 380px;
+      min-width: 340px;
+      background: var(--white);
+      border-left: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .lead-card-date { font-size: 11px; color: var(--text-muted); }
-    .lead-card-value { font-size: 12px; font-weight: 700; color: var(--primary-dark); }
+    .lead-detail-panel.hidden { display: none; }
+    .lead-detail-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .lead-detail-header h3 { font-size: 15px; font-weight: 700; }
+    .lead-detail-header p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .lead-detail-actions {
+      display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+    }
+    .lead-detail-body {
+      flex: 1; overflow-y: auto; padding: 16px;
+    }
+    .detail-section { margin-bottom: 18px; }
+    .detail-section h4 {
+      font-size: 11px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 8px; padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-row {
+      display: flex; justify-content: space-between;
+      padding: 4px 0; font-size: 12px;
+    }
+    .detail-row span:first-child { color: var(--text-muted); }
+    .detail-row span:last-child { font-weight: 600; text-align: right; }
+    .note-item {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 8px 10px; margin-bottom: 6px; font-size: 12px;
+    }
+    .note-meta { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+    .note-input-row { display: flex; gap: 6px; margin-top: 8px; }
+    .note-input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; resize: none; font-family: inherit; }
+    .note-input:focus { outline: none; border-color: var(--primary); }
+    .timeline-item {
+      padding: 6px 0; border-bottom: 1px solid #f5f5f5;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .timeline-item strong { color: var(--text); }
 
     .kanban-empty {
       text-align: center;
@@ -1091,17 +1197,65 @@
       </div>
     </div>
 
-    <!-- ── LEADS PAGE ── -->
+    <!-- ── LEADS / CRM PAGE ── -->
     <div id="leadsPage" class="page">
-      <div class="page-header">
-        <div>
-          <h1>👥 लीड्स (Leads)</h1>
-          <p>सभी एजेंट्स की पूछताछ और बुकिंग ट्रैक करें</p>
+      <!-- Kanban area (left/center) -->
+      <div class="kanban-wrapper">
+        <!-- Stats bar -->
+        <div class="crm-stats-bar" id="crmStatsBar">
+          <div class="crm-stat-item" onclick="loadLeadStats()">
+            <div class="crm-stat-val" id="statToday">-</div>
+            <div class="crm-stat-lbl">आज की<br>पूछताछ</div>
+          </div>
+          <div class="crm-stat-divider"></div>
+          <div class="crm-stat-item">
+            <div class="crm-stat-val" id="statWeek">-</div>
+            <div class="crm-stat-lbl">इस हफ्ते</div>
+          </div>
+          <div class="crm-stat-divider"></div>
+          <div class="crm-stat-item">
+            <div class="crm-stat-val" id="statMonth">-</div>
+            <div class="crm-stat-lbl">इस महीने</div>
+          </div>
+          <div class="crm-stat-divider"></div>
+          <div class="crm-stat-item">
+            <div class="crm-stat-val" id="statRevenue">-</div>
+            <div class="crm-stat-lbl">Revenue<br>(Completed)</div>
+          </div>
+          <div class="crm-stat-divider"></div>
+          <div class="crm-stat-item">
+            <div class="crm-stat-val" id="statConversion">-</div>
+            <div class="crm-stat-lbl">Conversion<br>Rate</div>
+          </div>
         </div>
-        <button class="btn btn-primary" onclick="openNewLeadModal()">+ नई लीड</button>
+        <!-- Toolbar -->
+        <div class="kanban-toolbar">
+          <input type="text" id="leadSearch" class="conv-search" style="width:200px;"
+            placeholder="🔍 खोजें..." oninput="debounceLoadLeads()">
+          <button class="btn btn-primary btn-sm" onclick="openNewLeadModal()">+ नई लीड</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadLeads()">🔄</button>
+          <span id="leadTotalCount" style="font-size:12px;color:#6b7280;margin-left:auto;"></span>
+        </div>
+        <!-- Board -->
+        <div class="kanban-board" id="kanbanBoard">
+          <div class="loading-item">लोड हो रहा है... ⏳</div>
+        </div>
       </div>
-      <div class="kanban-board" id="kanbanBoard">
-        <div class="loading-item">लोड हो रहा है... ⏳</div>
+      <!-- Detail panel (right) -->
+      <div class="lead-detail-panel hidden" id="leadDetailPanel">
+        <div class="lead-detail-header">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <h3 id="detailAgentName">Agent</h3>
+              <p id="detailAgentSub">Company · Phone</p>
+            </div>
+            <button onclick="closeLeadDetail()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6b7280;">✕</button>
+          </div>
+          <div class="lead-detail-actions" id="detailActions"></div>
+        </div>
+        <div class="lead-detail-body" id="leadDetailBody">
+          <div style="text-align:center;padding:30px;color:#9ca3af;">लोड हो रहा है...</div>
+        </div>
       </div>
     </div>
 
@@ -1265,10 +1419,10 @@ Body (JSON):
 </div>
 
 <!-- ══════════════════════════════════════
-     LEAD MODAL
+     LEAD MODAL (Create / Edit)
 ══════════════════════════════════════ -->
 <div class="modal-overlay hidden" id="leadModal">
-  <div class="modal">
+  <div class="modal" style="max-width:600px;">
     <div class="modal-header">
       <h2 id="leadModalTitle">नई लीड बनाएं</h2>
       <button class="modal-close" onclick="closeModal('leadModal')">✕</button>
@@ -1277,7 +1431,7 @@ Body (JSON):
       <input type="hidden" id="leadModalId">
       <div class="form-row">
         <div class="form-group">
-          <label>Phone Number *</label>
+          <label>Agent Phone *</label>
           <input type="text" class="form-control" id="leadPhone" placeholder="+91XXXXXXXXXX">
         </div>
         <div class="form-group">
@@ -1292,18 +1446,56 @@ Body (JSON):
         </div>
         <div class="form-group">
           <label>Destination</label>
-          <input type="text" class="form-control" id="leadDest" placeholder="Bali, Thailand...">
+          <input type="text" class="form-control" id="leadDest" placeholder="Goa, Bali...">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Status</label>
-          <select class="form-control" id="leadStatus">
-            <option>नई पूछताछ</option>
-            <option>फॉलो अप</option>
-            <option>कोटेशन भेजा</option>
-            <option>बुकिंग कन्फर्म</option>
-            <option>पेमेंट मिला</option>
+          <label>Check In</label>
+          <input type="date" class="form-control" id="leadCheckIn">
+        </div>
+        <div class="form-group">
+          <label>Check Out</label>
+          <input type="date" class="form-control" id="leadCheckOut">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Adults</label>
+          <input type="number" class="form-control" id="leadAdults" placeholder="2" min="0">
+        </div>
+        <div class="form-group">
+          <label>Kids</label>
+          <input type="number" class="form-control" id="leadKids" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Rooms</label>
+          <input type="number" class="form-control" id="leadRooms" placeholder="1" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quote Amount (₹)</label>
+          <input type="number" class="form-control" id="leadQuote" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Guest Name</label>
+          <input type="text" class="form-control" id="leadGuestName" placeholder="Lead guest">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Stage</label>
+          <select class="form-control" id="leadStage">
+            <option value="new_query">📩 नई पूछताछ</option>
+            <option value="quote_sent">💬 कोटेशन भेजा</option>
+            <option value="changes_requested">🔄 बदलाव चाहिए</option>
+            <option value="follow_up">📞 फॉलो अप</option>
+            <option value="booking_confirmed">✅ बुकिंग कन्फर्म</option>
+            <option value="advance_received">💰 एडवांस मिला</option>
+            <option value="voucher_sent">📄 वाउचर भेजा</option>
+            <option value="completed">🎉 पूरा हुआ</option>
+            <option value="lost">❌ नहीं बना</option>
           </select>
         </div>
         <div class="form-group">
@@ -1312,12 +1504,8 @@ Body (JSON):
         </div>
       </div>
       <div class="form-group">
-        <label>Total Value (₹)</label>
-        <input type="number" class="form-control" id="leadValue" placeholder="0">
-      </div>
-      <div class="form-group">
-        <label>Notes</label>
-        <textarea class="form-control" id="leadNotes" placeholder="कोई भी जरूरी जानकारी..."></textarea>
+        <label>Note (optional)</label>
+        <textarea class="form-control" id="leadNotes" placeholder="कोई जरूरी जानकारी..." rows="2"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -1559,7 +1747,7 @@ function switchPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(page + 'Page').classList.add('active');
 
-  if (page === 'leads') loadLeads();
+  if (page === 'leads') { loadLeads(); loadLeadStats(); }
   if (page === 'reports') loadStats();
   if (page === 'campaigns') { loadContacts(); loadCampaigns(); }
 }
@@ -1853,94 +2041,352 @@ async function sendMessage() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LEADS / KANBAN
+// CRM LEADS KANBAN
 // ═══════════════════════════════════════════════════════════
-const LEAD_STATUSES = ['नई पूछताछ', 'फॉलो अप', 'कोटेशन भेजा', 'बुकिंग कन्फर्म', 'पेमेंट मिला'];
-const COL_CLASSES = ['col-new', 'col-follow', 'col-quote', 'col-booking', 'col-payment'];
+const KANBAN_COLS = [
+  { stage: 'new_query',          label: '📩 नई पूछताछ',      cls: 'col-new_query' },
+  { stage: 'quote_sent',         label: '💬 कोटेशन भेजा',    cls: 'col-quote_sent' },
+  { stage: 'changes_requested',  label: '🔄 बदलाव चाहिए',    cls: 'col-changes_requested' },
+  { stage: 'follow_up',          label: '📞 फॉलो अप',        cls: 'col-follow_up' },
+  { stage: 'booking_confirmed',  label: '✅ बुकिंग कन्फर्म', cls: 'col-booking_confirmed' },
+  { stage: 'advance_received',   label: '💰 एडवांस मिला',    cls: 'col-advance_received' },
+  { stage: 'voucher_sent',       label: '📄 वाउचर भेजा',     cls: 'col-voucher_sent' },
+  { stage: 'completed',          label: '🎉 पूरा हुआ',        cls: 'col-completed' },
+  { stage: 'lost',               label: '❌ नहीं बना',        cls: 'col-lost' }
+];
+
+let leadDebounceTimer = null;
+let currentLeadId = null;
+let draggedLeadId = null;
+
+function debounceLoadLeads() {
+  clearTimeout(leadDebounceTimer);
+  leadDebounceTimer = setTimeout(loadLeads, 350);
+}
 
 async function loadLeads() {
+  const search = document.getElementById('leadSearch')?.value || '';
   try {
-    const res = await fetch('/api/leads');
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    const res = await fetch('/api/leads?' + params);
     if (!res.ok) throw new Error('Failed');
     const data = await res.json();
     if (data.success) {
-      state.leads = data.data;
-      renderKanban();
+      renderKanban(data.data);
+      document.getElementById('leadTotalCount').textContent = `${data.total} लीड्स`;
     }
   } catch (e) {
-    console.error('Failed to load leads:', e);
     document.getElementById('kanbanBoard').innerHTML =
-      '<div class="loading-item">लीड्स लोड नहीं हो सकीं ⚠️</div>';
+      '<div class="loading-item" style="width:100%">लीड्स लोड नहीं हो सकीं ⚠️</div>';
   }
 }
 
-function renderKanban() {
+async function loadLeadStats() {
+  try {
+    const res = await fetch('/api/leads/stats');
+    const data = await res.json();
+    if (!data.success) return;
+    const s = data.data;
+    document.getElementById('statToday').textContent = s.today || 0;
+    document.getElementById('statWeek').textContent = s.thisWeek || 0;
+    document.getElementById('statMonth').textContent = s.thisMonth || 0;
+    const rev = s.totalRevenue || 0;
+    document.getElementById('statRevenue').textContent =
+      rev >= 100000 ? '₹' + (rev/100000).toFixed(1) + 'L' : '₹' + rev.toLocaleString('en-IN');
+    document.getElementById('statConversion').textContent = (s.conversionRate || 0) + '%';
+  } catch (e) {}
+}
+
+function renderKanban(grouped) {
   const board = document.getElementById('kanbanBoard');
-  board.innerHTML = LEAD_STATUSES.map((status, i) => {
-    const cards = state.leads.filter(l => l.status === status);
+  board.innerHTML = KANBAN_COLS.map(col => {
+    const cards = (grouped[col.stage] || []);
     return `
-      <div class="kanban-col">
-        <div class="kanban-col-header ${COL_CLASSES[i]}">
-          <span>${status}</span>
+      <div class="kanban-col" data-stage="${col.stage}"
+        ondragover="onDragOver(event)" ondrop="onDrop(event, '${col.stage}')"
+        ondragleave="onDragLeave(event)">
+        <div class="kanban-col-header ${col.cls}">
+          <span>${col.label}</span>
           <span class="col-count">${cards.length}</span>
         </div>
         <div class="kanban-cards">
-          ${cards.length
-            ? cards.map(card => renderLeadCard(card)).join('')
-            : '<div class="kanban-empty">कोई लीड नहीं</div>'
-          }
+          ${cards.length ? cards.map(l => renderLeadCard(l)).join('') : '<div class="kanban-empty">Drop here</div>'}
         </div>
       </div>`;
   }).join('');
 }
 
+function cardAgeClass(lastActivity) {
+  if (!lastActivity) return 'age-fresh';
+  const days = Math.floor((Date.now() - new Date(lastActivity)) / 86400000);
+  if (days > 5) return 'age-stale';
+  if (days > 2) return 'age-warn';
+  return 'age-fresh';
+}
+
+function cardAgeDays(lastActivity) {
+  if (!lastActivity) return '0d';
+  const days = Math.floor((Date.now() - new Date(lastActivity)) / 86400000);
+  return days === 0 ? 'आज' : days + 'd';
+}
+
 function renderLeadCard(lead) {
-  const date = lead.enquiryDate ? new Date(lead.enquiryDate).toLocaleDateString('hi-IN') : '';
-  const value = lead.totalValue ? `₹${lead.totalValue.toLocaleString('en-IN')}` : '';
+  const pax = [
+    lead.destination,
+    lead.nights ? lead.nights + 'N' : '',
+    lead.adults ? lead.adults + 'A' : '',
+    lead.kids ? lead.kids + 'K' : ''
+  ].filter(Boolean).join(' • ');
+
+  const amount = lead.quoteAmount ? '₹' + lead.quoteAmount.toLocaleString('en-IN') : '';
+  const ageClass = cardAgeClass(lead.lastActivityAt);
+  const ageDays = cardAgeDays(lead.lastActivityAt);
+
   return `
-    <div class="lead-card" onclick="openLeadModal('${lead._id}')">
+    <div class="lead-card" draggable="true"
+      data-id="${lead._id}"
+      ondragstart="onDragStart(event, '${lead._id}')"
+      ondragend="onDragEnd(event)"
+      onclick="openLeadDetail('${lead._id}')">
       <div class="lead-card-name">${esc(lead.agentName || 'Unknown')}</div>
       <div class="lead-card-company">${esc(lead.agentCompany || lead.agentPhone)}</div>
-      ${lead.destination ? `<div class="lead-card-dest">✈️ ${esc(lead.destination)}</div>` : ''}
-      <div class="lead-card-bottom">
-        <div class="lead-card-date">📅 ${date}</div>
-        ${value ? `<div class="lead-card-value">${value}</div>` : ''}
+      ${pax ? `<div class="lead-card-dest">✈️ ${esc(pax)}</div>` : ''}
+      <div class="lead-card-row">
+        <span class="lead-card-amount">${amount}</span>
+        <span class="lead-card-age ${ageClass}">${ageDays}</span>
       </div>
-      ${lead.assignedTo ? `<div style="font-size:11px;color:#9ca3af;margin-top:4px">👤 ${esc(lead.assignedTo)}</div>` : ''}
+      ${lead.assignedTo ? `<div class="lead-card-assigned">👤 ${esc(lead.assignedTo)}</div>` : ''}
     </div>`;
 }
 
+// ── Drag and Drop ─────────────────────────────────────────
+function onDragStart(e, leadId) {
+  draggedLeadId = leadId;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+function onDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
+}
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(e) {
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+}
+async function onDrop(e, newStage) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!draggedLeadId) return;
+
+  try {
+    const res = await fetch(`/api/leads/${draggedLeadId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: newStage })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadLeads();
+      if (currentLeadId === draggedLeadId) openLeadDetail(draggedLeadId);
+    } else {
+      showToast('Stage update failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+  draggedLeadId = null;
+}
+
+// ── Lead Detail Panel ─────────────────────────────────────
+async function openLeadDetail(id) {
+  currentLeadId = id;
+  const panel = document.getElementById('leadDetailPanel');
+  panel.classList.remove('hidden');
+  document.getElementById('leadDetailBody').innerHTML =
+    '<div style="text-align:center;padding:30px;color:#9ca3af;">लोड हो रहा है...</div>';
+
+  try {
+    const res = await fetch(`/api/leads/${id}`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    renderLeadDetail(data.data);
+  } catch (e) {
+    document.getElementById('leadDetailBody').innerHTML =
+      '<div style="text-align:center;padding:20px;color:#ef4444;">Load failed ⚠️</div>';
+  }
+}
+
+function renderLeadDetail(lead) {
+  // Header
+  document.getElementById('detailAgentName').textContent =
+    lead.agentName || 'Unknown Agent';
+  document.getElementById('detailAgentSub').textContent =
+    [lead.agentCompany, lead.agentPhone].filter(Boolean).join(' · ');
+
+  // Action buttons
+  const phone = lead.agentPhone || '';
+  document.getElementById('detailActions').innerHTML = `
+    <a href="tel:${phone}" class="btn btn-secondary btn-sm">📞 Call</a>
+    <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn btn-secondary btn-sm">💬 WhatsApp</a>
+    <button class="btn btn-secondary btn-sm" onclick="openEditLead('${lead._id}')">✏️ Edit</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteLead('${lead._id}')">🗑️</button>`;
+
+  // Body
+  const fmt = d => d ? new Date(d).toLocaleDateString('hi-IN', { day:'2-digit', month:'short', year:'numeric' }) : '-';
+  const stageLabel = KANBAN_COLS.find(c => c.stage === lead.stage)?.label || lead.stage;
+
+  let html = `
+    <div class="detail-section">
+      <h4>📋 Booking Details</h4>
+      <div class="detail-row"><span>Destination</span><span>${esc(lead.destination || '-')}</span></div>
+      <div class="detail-row"><span>Check In</span><span>${fmt(lead.checkIn)}</span></div>
+      <div class="detail-row"><span>Check Out</span><span>${fmt(lead.checkOut)}</span></div>
+      <div class="detail-row"><span>Nights</span><span>${lead.nights || '-'}</span></div>
+      <div class="detail-row"><span>Adults / Kids</span><span>${lead.adults || 0} / ${lead.kids || 0}</span></div>
+      <div class="detail-row"><span>Rooms</span><span>${lead.rooms || '-'}</span></div>
+      <div class="detail-row"><span>Meal Plan</span><span>${esc(lead.mealPlan || '-')}</span></div>
+      <div class="detail-row"><span>Hotel</span><span>${esc(lead.hotelName || '-')}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>💰 Financial</h4>
+      <div class="detail-row"><span>Quote Amount</span><span style="color:var(--primary-dark);font-size:14px;">${lead.quoteAmount ? '₹' + lead.quoteAmount.toLocaleString('en-IN') : '-'}</span></div>
+      <div class="detail-row"><span>Advance Received</span><span>${lead.advanceAmount ? '₹' + lead.advanceAmount.toLocaleString('en-IN') : '-'}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>👤 Guest Info</h4>
+      <div class="detail-row"><span>Guest Name</span><span>${esc(lead.guestName || '-')}</span></div>
+      <div class="detail-row"><span>Guest Phone</span><span>${esc(lead.guestPhone || '-')}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>📊 CRM Status</h4>
+      <div class="detail-row"><span>Stage</span><span>${stageLabel}</span></div>
+      <div class="detail-row"><span>Assigned To</span><span>${esc(lead.assignedTo || '-')}</span></div>
+      <div class="detail-row"><span>Source</span><span>${lead.source === 'whatsapp_bot' ? '🤖 WhatsApp Bot' : '✍️ Manual'}</span></div>
+      <div class="detail-row"><span>Created</span><span>${fmt(lead.createdAt)}</span></div>
+      <div class="detail-row"><span>Last Activity</span><span>${fmt(lead.lastActivityAt)}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>📝 Notes (${(lead.notes || []).length})</h4>
+      ${(lead.notes || []).map(n => `
+        <div class="note-item">
+          ${esc(n.text)}
+          <div class="note-meta">👤 ${esc(n.addedBy)} · ${fmt(n.addedAt)}</div>
+        </div>`).join('') || '<p style="font-size:12px;color:#9ca3af;">कोई note नहीं</p>'}
+      <div class="note-input-row">
+        <textarea class="note-input" id="noteInput_${lead._id}" placeholder="Note लिखें..." rows="2"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="addNote('${lead._id}')">Add</button>
+      </div>
+    </div>`;
+
+  if (lead.queryHistory && lead.queryHistory.length > 0) {
+    html += `
+      <div class="detail-section">
+        <h4>🔍 Query History (${lead.queryHistory.length})</h4>
+        ${lead.queryHistory.slice().reverse().slice(0,5).map(q => `
+          <div class="timeline-item">
+            <strong>${fmt(q.timestamp)}</strong><br>
+            ${esc(q.query || '')}
+          </div>`).join('')}
+      </div>`;
+  }
+
+  document.getElementById('leadDetailBody').innerHTML = html;
+}
+
+async function addNote(leadId) {
+  const input = document.getElementById(`noteInput_${leadId}`);
+  const text = input?.value?.trim();
+  if (!text) return;
+
+  try {
+    const res = await fetch(`/api/leads/${leadId}/note`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Note add हो गया ✅', 'success');
+      renderLeadDetail(data.data);
+    } else {
+      showToast(data.error || 'Failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+async function deleteLead(id) {
+  if (!confirm('यह lead delete करें?')) return;
+  try {
+    await fetch(`/api/leads/${id}`, { method: 'DELETE' });
+    closeLeadDetail();
+    loadLeads();
+    showToast('Lead delete हो गई', 'success');
+  } catch (e) {
+    showToast('Delete failed', 'error');
+  }
+}
+
+function closeLeadDetail() {
+  currentLeadId = null;
+  document.getElementById('leadDetailPanel').classList.add('hidden');
+}
+
+// ── Lead Create/Edit Modal ────────────────────────────────
 function openNewLeadModal() {
   document.getElementById('leadModalTitle').textContent = 'नई लीड बनाएं';
   document.getElementById('leadModalId').value = '';
-  document.getElementById('leadPhone').value = '';
-  document.getElementById('leadName').value = '';
-  document.getElementById('leadCompany').value = '';
-  document.getElementById('leadDest').value = '';
-  document.getElementById('leadStatus').value = 'नई पूछताछ';
-  document.getElementById('leadAssigned').value = '';
-  document.getElementById('leadValue').value = '';
-  document.getElementById('leadNotes').value = '';
+  ['leadPhone','leadName','leadCompany','leadDest','leadAssigned','leadNotes','leadGuestName'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['leadCheckIn','leadCheckOut'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['leadAdults','leadKids','leadRooms','leadQuote'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('leadStage').value = 'new_query';
   document.getElementById('leadPhone').disabled = false;
   document.getElementById('leadModal').classList.remove('hidden');
 }
 
-function openLeadModal(id) {
-  const lead = state.leads.find(l => l._id === id);
-  if (!lead) return;
+async function openEditLead(id) {
+  try {
+    const res = await fetch(`/api/leads/${id}`);
+    const data = await res.json();
+    if (!data.success) return;
+    const lead = data.data;
 
-  document.getElementById('leadModalTitle').textContent = 'लीड अपडेट करें';
-  document.getElementById('leadModalId').value = lead._id;
-  document.getElementById('leadPhone').value = lead.agentPhone || '';
-  document.getElementById('leadPhone').disabled = true;
-  document.getElementById('leadName').value = lead.agentName || '';
-  document.getElementById('leadCompany').value = lead.agentCompany || '';
-  document.getElementById('leadDest').value = lead.destination || '';
-  document.getElementById('leadStatus').value = lead.status || 'नई पूछताछ';
-  document.getElementById('leadAssigned').value = lead.assignedTo || '';
-  document.getElementById('leadValue').value = lead.totalValue || '';
-  document.getElementById('leadNotes').value = lead.notes || '';
-  document.getElementById('leadModal').classList.remove('hidden');
+    document.getElementById('leadModalTitle').textContent = 'लीड अपडेट करें';
+    document.getElementById('leadModalId').value = lead._id;
+    document.getElementById('leadPhone').value = lead.agentPhone || '';
+    document.getElementById('leadPhone').disabled = true;
+    document.getElementById('leadName').value = lead.agentName || '';
+    document.getElementById('leadCompany').value = lead.agentCompany || '';
+    document.getElementById('leadDest').value = lead.destination || '';
+    document.getElementById('leadCheckIn').value = lead.checkIn ? lead.checkIn.slice(0,10) : '';
+    document.getElementById('leadCheckOut').value = lead.checkOut ? lead.checkOut.slice(0,10) : '';
+    document.getElementById('leadAdults').value = lead.adults || '';
+    document.getElementById('leadKids').value = lead.kids || '';
+    document.getElementById('leadRooms').value = lead.rooms || '';
+    document.getElementById('leadQuote').value = lead.quoteAmount || '';
+    document.getElementById('leadGuestName').value = lead.guestName || '';
+    document.getElementById('leadStage').value = lead.stage || 'new_query';
+    document.getElementById('leadAssigned').value = lead.assignedTo || '';
+    document.getElementById('leadNotes').value = '';
+    document.getElementById('leadModal').classList.remove('hidden');
+  } catch (e) {
+    showToast('Load failed', 'error');
+  }
 }
 
 async function saveLead() {
@@ -1954,16 +2400,21 @@ async function saveLead() {
     agentName: document.getElementById('leadName').value.trim(),
     agentCompany: document.getElementById('leadCompany').value.trim(),
     destination: document.getElementById('leadDest').value.trim(),
-    status: document.getElementById('leadStatus').value,
+    checkIn: document.getElementById('leadCheckIn').value || null,
+    checkOut: document.getElementById('leadCheckOut').value || null,
+    adults: parseInt(document.getElementById('leadAdults').value) || 0,
+    kids: parseInt(document.getElementById('leadKids').value) || 0,
+    rooms: parseInt(document.getElementById('leadRooms').value) || 0,
+    quoteAmount: parseFloat(document.getElementById('leadQuote').value) || 0,
+    guestName: document.getElementById('leadGuestName').value.trim(),
+    stage: document.getElementById('leadStage').value,
     assignedTo: document.getElementById('leadAssigned').value.trim(),
-    totalValue: parseFloat(document.getElementById('leadValue').value) || 0,
     notes: document.getElementById('leadNotes').value.trim()
   };
 
   if (!payload.agentPhone) {
     showToast('Phone number जरूरी है', 'error');
-    btn.disabled = false;
-    btn.innerHTML = '💾 सेव करें';
+    btn.disabled = false; btn.innerHTML = '💾 सेव करें';
     return;
   }
 
@@ -1980,6 +2431,8 @@ async function saveLead() {
       showToast(id ? 'लीड अपडेट हो गई ✅' : 'नई लीड बन गई ✅', 'success');
       closeModal('leadModal');
       loadLeads();
+      loadLeadStats();
+      if (id && currentLeadId === id) openLeadDetail(id);
     } else {
       showToast(data.error || 'Save failed', 'error');
     }
