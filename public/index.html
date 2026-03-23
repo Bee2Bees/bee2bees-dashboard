@@ -893,6 +893,85 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+    /* ── CAMPAIGN TABS ── */
+    .camp-tab {
+      padding: 14px 20px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .camp-tab:hover { color: var(--text); }
+    .camp-tab.active { color: var(--primary-dark); border-bottom-color: var(--primary-dark); }
+    .camp-tab-content { display: none; }
+    .camp-tab-content:not(.hidden) { display: flex; }
+
+    /* Contacts table */
+    #contactsTable tbody tr:hover { background: #f9fafb; }
+    #contactsTable td { padding: 9px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+
+    /* Campaign card */
+    .campaign-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .campaign-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .campaign-card h3 { font-size: 15px; font-weight: 700; }
+    .campaign-card p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .badge-draft    { background: #f3f4f6; color: #6b7280; }
+    .badge-sending  { background: #fef3c7; color: #92400e; }
+    .badge-sent     { background: var(--bot-green); color: #065f46; }
+    .badge-failed   { background: var(--danger-red); color: #991b1b; }
+
+    .progress-bar-track {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* Preview table */
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+    .preview-table th {
+      background: #f9fafb;
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .preview-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .preview-table tbody tr:hover { background: #f9fafb; }
   </style>
 </head>
 <body>
@@ -942,6 +1021,10 @@
       <div class="nav-item" data-page="reports">
         <span class="icon">📊</span>
         <span>रिपोर्ट <small>(Reports)</small></span>
+      </div>
+      <div class="nav-item" data-page="campaigns">
+        <span class="icon">📢</span>
+        <span>अभियान <small>(Campaigns)</small></span>
       </div>
       <div class="nav-item" data-page="settings">
         <span class="icon">⚙️</span>
@@ -1035,6 +1118,82 @@
         <div class="loading-item">लोड हो रहा है... ⏳</div>
       </div>
       <div class="reports-charts" id="statsCharts" style="display:none;"></div>
+    </div>
+
+    <!-- ── CAMPAIGNS PAGE ── -->
+    <div id="campaignsPage" class="page">
+      <div class="page-header">
+        <div>
+          <h1>📢 अभियान (Campaigns)</h1>
+          <p>WhatsApp broadcast campaigns और contacts manage करें</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="background:#fff; border-bottom:1px solid #e4e7ec; padding:0 24px; flex-shrink:0;">
+        <div style="display:flex; gap:0;">
+          <button class="camp-tab active" data-tab="contacts" onclick="switchCampTab(this)">
+            👥 संपर्क (Contacts)
+          </button>
+          <button class="camp-tab" data-tab="campaigns-list" onclick="switchCampTab(this)">
+            📢 अभियान (Campaigns)
+          </button>
+        </div>
+      </div>
+
+      <!-- Contacts Tab -->
+      <div id="campTab-contacts" class="camp-tab-content" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+        <!-- Contacts toolbar -->
+        <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
+          <input type="text" id="contactSearch" class="conv-search" style="width:240px;"
+            placeholder="🔍 नाम, फोन, कंपनी..." oninput="filterContacts()">
+          <select id="contactSourceFilter" class="form-control" style="width:160px;" onchange="filterContacts()">
+            <option value="">सभी Sources</option>
+          </select>
+          <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin-bottom:0;">
+            📥 Excel/CSV Upload
+            <input type="file" id="contactFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleContactFile(event)">
+          </label>
+          <button class="btn btn-secondary btn-sm" onclick="exportContacts()">📤 Export</button>
+          <button class="btn btn-danger btn-sm hidden" id="bulkDeleteBtn" onclick="bulkDeleteContacts()">🗑️ Delete Selected</button>
+          <span style="margin-left:auto; font-size:12px; color:#6b7280;" id="contactCount"></span>
+        </div>
+
+        <!-- Upload preview modal trigger area (inline) -->
+        <div style="flex:1; overflow-y:auto; padding:16px 20px;">
+          <table id="contactsTable" style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+              <tr style="background:#f9fafb; text-align:left;">
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec; width:32px;">
+                  <input type="checkbox" id="selectAllContacts" onchange="toggleSelectAll(this)">
+                </th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">नाम (Name)</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">📱 Phone</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">🏢 Company</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">🏙️ City</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Source</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="contactsBody">
+              <tr><td colspan="7" style="text-align:center; padding:40px; color:#9ca3af;">लोड हो रहा है...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Campaigns List Tab -->
+      <div id="campTab-campaigns-list" class="camp-tab-content hidden" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+        <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-shrink:0;">
+          <button class="btn btn-primary" onclick="openNewCampaignModal()">+ नया अभियान बनाएं</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadCampaigns()">🔄 रिफ्रेश</button>
+        </div>
+        <div style="flex:1; overflow-y:auto; padding:20px;">
+          <div id="campaignsList">
+            <div style="text-align:center; padding:40px; color:#9ca3af;">लोड हो रहा है...</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ── SETTINGS PAGE ── -->
@@ -1168,9 +1327,123 @@ Body (JSON):
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     UPLOAD PREVIEW MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="uploadPreviewModal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <h2>📥 Contacts Preview</h2>
+      <button class="modal-close" onclick="closeModal('uploadPreviewModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="uploadPreviewSummary" style="font-size:13px; color:#6b7280; margin-bottom:8px;"></p>
+      <div style="max-height:360px; overflow-y:auto;">
+        <table class="preview-table" id="uploadPreviewTable">
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Phone</th><th>Company</th><th>City</th><th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="uploadPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('uploadPreviewModal')">रद्द करें</button>
+      <button class="btn btn-primary" id="confirmUploadBtn" onclick="confirmContactUpload()">
+        ✅ Import करें
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     NEW CAMPAIGN MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="campaignModal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <h2 id="campaignModalTitle">नया अभियान बनाएं</h2>
+      <button class="modal-close" onclick="closeModal('campaignModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Campaign Name *</label>
+        <input type="text" class="form-control" id="campName" placeholder="e.g. SATTE 2026 Broadcast">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Template Name * <span style="font-weight:400;color:#9ca3af;">(Meta approved)</span></label>
+          <input type="text" class="form-control" id="campTemplate" placeholder="e.g. satte_2026_invite">
+        </div>
+        <div class="form-group">
+          <label>Language</label>
+          <select class="form-control" id="campLang">
+            <option value="en">English (en)</option>
+            <option value="en_US">English US (en_US)</option>
+            <option value="hi">Hindi (hi)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Message Preview <span style="font-weight:400;color:#9ca3af;">(for reference)</span></label>
+        <textarea class="form-control" id="campMessage" placeholder="Template message preview..." rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Contacts</label>
+        <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-sm camp-select-btn active" data-mode="all" onclick="setCampContactMode(this)">
+            Sभी Active Contacts
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm camp-select-btn" data-mode="source" onclick="setCampContactMode(this)">
+            Source से चुनें
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm camp-select-btn" data-mode="tag" onclick="setCampContactMode(this)">
+            Tag से चुनें
+          </button>
+        </div>
+        <div id="campSourceFilter" class="hidden">
+          <select class="form-control" id="campSourceSelect">
+            <option value="">-- Source चुनें --</option>
+          </select>
+        </div>
+        <div id="campTagFilter" class="hidden">
+          <input type="text" class="form-control" id="campTagInput" placeholder="Tag name...">
+        </div>
+        <p id="campContactCount" style="font-size:12px; color:#6b7280; margin-top:8px;">
+          लोड हो रहा है...
+        </p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('campaignModal')">रद्द करें</button>
+      <button class="btn btn-primary" id="campSaveBtn" onclick="saveCampaign()">💾 Draft सेव करें</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     CAMPAIGN STATS MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="campaignStatsModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h2 id="statsModalTitle">Campaign Stats</h2>
+      <button class="modal-close" onclick="closeModal('campaignStatsModal')">✕</button>
+    </div>
+    <div class="modal-body" id="campaignStatsBody">
+      <div style="text-align:center;padding:30px;color:#9ca3af;">लोड हो रहा है...</div>
+    </div>
+    <div class="modal-footer" id="campaignStatsFooter"></div>
+  </div>
+</div>
+
 <!-- Toast container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- SheetJS for Excel/CSV parsing -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // STATE
@@ -1278,6 +1551,7 @@ function switchPage(page) {
 
   if (page === 'leads') loadLeads();
   if (page === 'reports') loadStats();
+  if (page === 'campaigns') { loadContacts(); loadCampaigns(); }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1917,6 +2191,486 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 init().then(() => {
   updateSettingsStatus();
 });
+
+// ═══════════════════════════════════════════════════════════
+// CAMPAIGNS — TABS
+// ═══════════════════════════════════════════════════════════
+function switchCampTab(btn) {
+  document.querySelectorAll('.camp-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = btn.getAttribute('data-tab');
+  document.querySelectorAll('.camp-tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('campTab-' + tab).classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTACTS
+// ═══════════════════════════════════════════════════════════
+let allContacts = [];
+let pendingUploadContacts = [];
+
+async function loadContacts() {
+  try {
+    const search = document.getElementById('contactSearch')?.value || '';
+    const source = document.getElementById('contactSourceFilter')?.value || '';
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (source) params.set('source', source);
+
+    const res = await fetch('/api/contacts?' + params);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    allContacts = data.data;
+    renderContactsTable(allContacts);
+    updateSourceFilter(allContacts);
+    document.getElementById('contactCount').textContent =
+      `कुल ${data.total} contacts`;
+  } catch (e) {
+    console.error('Failed to load contacts:', e);
+    document.getElementById('contactsBody').innerHTML =
+      `<tr><td colspan="7" style="text-align:center;padding:30px;color:#9ca3af;">Contacts लोड नहीं हो सके ⚠️</td></tr>`;
+  }
+}
+
+function renderContactsTable(contacts) {
+  const tbody = document.getElementById('contactsBody');
+  if (!contacts.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">कोई contact नहीं मिला</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = contacts.map(c => `
+    <tr>
+      <td><input type="checkbox" class="contact-chk" value="${c._id}" onchange="updateBulkBtn()"></td>
+      <td><strong>${esc(c.name || '-')}</strong></td>
+      <td style="font-family:monospace; font-size:12px;">${esc(c.phone)}</td>
+      <td>${esc(c.company || '-')}</td>
+      <td>${esc(c.city || '-')}</td>
+      <td><span style="background:#f3f4f6;padding:2px 8px;border-radius:10px;font-size:11px;">${esc(c.source || '-')}</span></td>
+      <td>
+        <span class="badge ${c.status === 'active' ? 'badge-bot' : 'badge-resolved'}">
+          ${c.status === 'active' ? '✅ Active' : '🚫 Unsub'}
+        </span>
+      </td>
+    </tr>`).join('');
+}
+
+function updateSourceFilter(contacts) {
+  const sources = [...new Set(contacts.map(c => c.source).filter(Boolean))].sort();
+  const sel = document.getElementById('contactSourceFilter');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">सभी Sources</option>' +
+    sources.map(s => `<option value="${esc(s)}" ${s === current ? 'selected' : ''}>${esc(s)}</option>`).join('');
+
+  // Also update campaign source selects
+  const campSel = document.getElementById('campSourceSelect');
+  if (campSel) {
+    campSel.innerHTML = '<option value="">-- Source चुनें --</option>' +
+      sources.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  }
+}
+
+function filterContacts() {
+  loadContacts();
+}
+
+function toggleSelectAll(cb) {
+  document.querySelectorAll('.contact-chk').forEach(c => c.checked = cb.checked);
+  updateBulkBtn();
+}
+
+function updateBulkBtn() {
+  const checked = document.querySelectorAll('.contact-chk:checked').length;
+  const btn = document.getElementById('bulkDeleteBtn');
+  if (checked > 0) {
+    btn.classList.remove('hidden');
+    btn.textContent = `🗑️ Delete (${checked})`;
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+async function bulkDeleteContacts() {
+  const ids = [...document.querySelectorAll('.contact-chk:checked')].map(c => c.value);
+  if (!ids.length) return;
+  if (!confirm(`${ids.length} contacts delete करें?`)) return;
+
+  let deleted = 0;
+  for (const id of ids) {
+    try {
+      await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+      deleted++;
+    } catch (e) {}
+  }
+  showToast(`${deleted} contacts delete हो गए`, 'success');
+  loadContacts();
+}
+
+function exportContacts() {
+  if (!allContacts.length) { showToast('Export के लिए कोई contact नहीं', 'warning'); return; }
+  const rows = [['Name', 'Phone', 'Company', 'City', 'Email', 'Source', 'Status', 'Created']];
+  allContacts.forEach(c => rows.push([
+    c.name, c.phone, c.company, c.city, c.email,
+    c.source, c.status, c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ''
+  ]));
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Contacts');
+  XLSX.writeFile(wb, `bee2bees_contacts_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('Contacts exported!', 'success');
+}
+
+// ─── Excel/CSV Upload ─────────────────────────────────────
+function handleContactFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = ''; // reset so same file can be re-uploaded
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      if (!raw.length) { showToast('File में data नहीं मिला', 'error'); return; }
+
+      // Auto-map columns (case-insensitive)
+      const mapped = raw.map(row => {
+        const keys = Object.keys(row);
+        function find(...names) {
+          const k = keys.find(k => names.some(n => k.toLowerCase().includes(n)));
+          return k ? String(row[k]).trim() : '';
+        }
+        return {
+          name: find('name', 'नाम'),
+          phone: find('phone', 'mobile', 'whatsapp', 'number', 'फोन', 'mob'),
+          email: find('email', 'mail'),
+          company: find('company', 'agency', 'firm', 'कंपनी', 'organisation'),
+          city: find('city', 'शहर', 'location', 'town'),
+          source: find('source', 'event', 'exhibition', 'ref')
+        };
+      }).filter(c => c.phone);
+
+      if (!mapped.length) {
+        showToast('Phone column नहीं मिला — column names check करें', 'error');
+        return;
+      }
+
+      pendingUploadContacts = mapped;
+      showUploadPreview(mapped);
+    } catch (err) {
+      console.error('File parse error:', err);
+      showToast('File parse नहीं हो सकी: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showUploadPreview(contacts) {
+  document.getElementById('uploadPreviewSummary').textContent =
+    `${contacts.length} contacts मिले — import करने से पहले check करें:`;
+
+  const tbody = document.getElementById('uploadPreviewBody');
+  tbody.innerHTML = contacts.slice(0, 50).map((c, i) => `
+    <tr>
+      <td style="color:#9ca3af">${i + 1}</td>
+      <td>${esc(c.name || '-')}</td>
+      <td style="font-family:monospace">${esc(c.phone)}</td>
+      <td>${esc(c.company || '-')}</td>
+      <td>${esc(c.city || '-')}</td>
+      <td>${esc(c.source || '-')}</td>
+    </tr>`).join('');
+
+  if (contacts.length > 50) {
+    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:8px;">
+      ... और ${contacts.length - 50} contacts</td></tr>`;
+  }
+  document.getElementById('uploadPreviewModal').classList.remove('hidden');
+}
+
+async function confirmContactUpload() {
+  if (!pendingUploadContacts.length) return;
+  const btn = document.getElementById('confirmUploadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Import हो रहा है...';
+
+  try {
+    const res = await fetch('/api/contacts/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contacts: pendingUploadContacts })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✅ ${data.inserted} नए + ${data.updated} updated + ${data.skipped} skip`, 'success');
+      closeModal('uploadPreviewModal');
+      pendingUploadContacts = [];
+      loadContacts();
+    } else {
+      showToast(data.error || 'Import failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Import करें';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAMPAIGNS
+// ═══════════════════════════════════════════════════════════
+let campContactMode = 'all';
+
+async function loadCampaigns() {
+  const el = document.getElementById('campaignsList');
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;">लोड हो रहा है...</div>';
+  try {
+    const res = await fetch('/api/campaigns');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    if (!data.data.length) {
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;">अभी कोई campaign नहीं है। नया बनाएं!</div>';
+      return;
+    }
+    el.innerHTML = data.data.map(c => renderCampaignCard(c)).join('');
+  } catch (e) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">Campaigns लोड नहीं हो सके ⚠️</div>';
+  }
+}
+
+function renderCampaignCard(c) {
+  const pct = c.totalContacts > 0 ? Math.round((c.sentCount / c.totalContacts) * 100) : 0;
+  const date = c.sentAt
+    ? new Date(c.sentAt).toLocaleDateString('hi-IN', { day:'2-digit', month:'short', year:'numeric' })
+    : new Date(c.createdAt).toLocaleDateString('hi-IN', { day:'2-digit', month:'short' });
+
+  const statusLabel = { draft:'📝 Draft', sending:'⏳ Sending...', sent:'✅ Sent', failed:'❌ Failed' };
+  const statusBadgeClass = `badge badge-${c.status}`;
+
+  return `
+    <div class="campaign-card">
+      <div class="campaign-card-header">
+        <div>
+          <h3>${esc(c.name)}</h3>
+          <p>Template: <code>${esc(c.templateName || '-')}</code> · ${date}</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="${statusBadgeClass}">${statusLabel[c.status] || c.status}</span>
+          <button class="btn btn-secondary btn-sm" onclick="openCampaignStats('${c._id}')">📊 Stats</button>
+          ${c.status === 'draft' ? `<button class="btn btn-primary btn-sm" onclick="sendCampaign('${c._id}', '${esc(c.name)}', ${c.totalContacts})">📤 Send Now</button>` : ''}
+        </div>
+      </div>
+      <div style="display:flex; gap:24px; font-size:12px; color:#6b7280; margin-bottom:6px;">
+        <span>👥 Total: <strong>${c.totalContacts}</strong></span>
+        <span>✅ Sent: <strong style="color:#065f46">${c.sentCount}</strong></span>
+        <span>❌ Failed: <strong style="color:#991b1b">${c.failedCount}</strong></span>
+        <span>💬 Replied: <strong style="color:#1e40af">${c.repliedCount}</strong></span>
+      </div>
+      ${c.status === 'sending' || c.status === 'sent' ? `
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px;">${pct}% complete</div>` : ''}
+    </div>`;
+}
+
+function openNewCampaignModal() {
+  document.getElementById('campaignModalTitle').textContent = 'नया अभियान बनाएं';
+  document.getElementById('campName').value = '';
+  document.getElementById('campTemplate').value = '';
+  document.getElementById('campMessage').value = '';
+  document.getElementById('campLang').value = 'en';
+  campContactMode = 'all';
+  document.querySelectorAll('.camp-select-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.camp-select-btn[data-mode="all"]').classList.add('active');
+  document.getElementById('campSourceFilter').classList.add('hidden');
+  document.getElementById('campTagFilter').classList.add('hidden');
+  updateCampContactCount();
+  document.getElementById('campaignModal').classList.remove('hidden');
+}
+
+function setCampContactMode(btn) {
+  document.querySelectorAll('.camp-select-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  campContactMode = btn.getAttribute('data-mode');
+  document.getElementById('campSourceFilter').classList.toggle('hidden', campContactMode !== 'source');
+  document.getElementById('campTagFilter').classList.toggle('hidden', campContactMode !== 'tag');
+  updateCampContactCount();
+}
+
+async function updateCampContactCount() {
+  const el = document.getElementById('campContactCount');
+  if (!el) return;
+  try {
+    let url = '/api/contacts?status=active';
+    if (campContactMode === 'source') {
+      const src = document.getElementById('campSourceSelect')?.value;
+      if (src) url += '&source=' + encodeURIComponent(src);
+    } else if (campContactMode === 'tag') {
+      const tag = document.getElementById('campTagInput')?.value;
+      if (tag) url += '&tag=' + encodeURIComponent(tag);
+    }
+    const res = await fetch(url);
+    const data = await res.json();
+    el.textContent = `📱 ${data.total || 0} active contacts select होंगे`;
+  } catch (e) {
+    el.textContent = 'Count load नहीं हो सका';
+  }
+}
+
+// Update count when source/tag changes
+document.addEventListener('change', e => {
+  if (e.target.id === 'campSourceSelect' || e.target.id === 'campTagInput') {
+    updateCampContactCount();
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'campTagInput') updateCampContactCount();
+});
+
+async function saveCampaign() {
+  const name = document.getElementById('campName').value.trim();
+  const templateName = document.getElementById('campTemplate').value.trim();
+  const message = document.getElementById('campMessage').value.trim();
+  const templateLanguage = document.getElementById('campLang').value;
+
+  if (!name) { showToast('Campaign name जरूरी है', 'error'); return; }
+  if (!templateName) { showToast('Template name जरूरी है', 'error'); return; }
+
+  const btn = document.getElementById('campSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> सेव हो रहा है...';
+
+  try {
+    // Get contacts based on mode
+    let contactsUrl = '/api/contacts?status=active';
+    if (campContactMode === 'source') {
+      const src = document.getElementById('campSourceSelect')?.value;
+      if (src) contactsUrl += '&source=' + encodeURIComponent(src);
+    } else if (campContactMode === 'tag') {
+      const tag = document.getElementById('campTagInput')?.value;
+      if (tag) contactsUrl += '&tag=' + encodeURIComponent(tag);
+    }
+    const contactRes = await fetch(contactsUrl);
+    const contactData = await contactRes.json();
+    const contactPhones = (contactData.data || []).map(c => c.phone);
+
+    if (!contactPhones.length) {
+      showToast('कोई contact select नहीं हुआ', 'error');
+      btn.disabled = false; btn.innerHTML = '💾 Draft सेव करें';
+      return;
+    }
+
+    const res = await fetch('/api/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, templateName, templateLanguage, message, contacts: contactPhones })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Campaign draft बन गया (${contactPhones.length} contacts) ✅`, 'success');
+      closeModal('campaignModal');
+      loadCampaigns();
+      // Switch to campaigns tab
+      document.querySelector('.camp-tab[data-tab="campaigns-list"]').click();
+    } else {
+      showToast(data.error || 'Save failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Draft सेव करें';
+  }
+}
+
+async function sendCampaign(id, name, total) {
+  if (!confirm(`"${name}" campaign ${total} contacts को भेजें?\n\nयह action undo नहीं हो सकता।`)) return;
+
+  try {
+    const res = await fetch(`/api/campaigns/${id}/send`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`📤 Campaign sending शुरू हो गई! ${total} messages queue में`, 'success');
+      loadCampaigns();
+      // Auto-refresh every 5s while sending
+      const refreshInterval = setInterval(async () => {
+        const statsRes = await fetch(`/api/campaigns/${id}/stats`);
+        const statsData = await statsRes.json();
+        if (statsData.data?.status === 'sent' || statsData.data?.status === 'failed') {
+          clearInterval(refreshInterval);
+          showToast(`Campaign complete: ${statsData.data.sentCount} sent, ${statsData.data.failedCount} failed`, 'success');
+        }
+        loadCampaigns();
+      }, 5000);
+      setTimeout(() => clearInterval(refreshInterval), 10 * 60 * 1000); // stop after 10 mins
+    } else {
+      showToast(data.error || 'Send failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+async function openCampaignStats(id) {
+  document.getElementById('campaignStatsModal').classList.remove('hidden');
+  document.getElementById('campaignStatsBody').innerHTML =
+    '<div style="text-align:center;padding:30px;color:#9ca3af;">लोड हो रहा है...</div>';
+  document.getElementById('campaignStatsFooter').innerHTML = '';
+
+  try {
+    const res = await fetch(`/api/campaigns/${id}/stats`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    const s = data.data;
+
+    document.getElementById('statsModalTitle').textContent = s.name;
+
+    const pct = s.totalContacts > 0 ? Math.round((s.sentCount / s.totalContacts) * 100) : 0;
+    const statusLabel = { draft:'📝 Draft', sending:'⏳ Sending...', sent:'✅ Sent', failed:'❌ Failed' };
+
+    document.getElementById('campaignStatsBody').innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+        <div style="background:#f9fafb; border-radius:8px; padding:14px; text-align:center;">
+          <div style="font-size:28px; font-weight:800;">${s.totalContacts}</div>
+          <div style="font-size:12px; color:#6b7280;">👥 Total Contacts</div>
+        </div>
+        <div style="background:#d1fae5; border-radius:8px; padding:14px; text-align:center;">
+          <div style="font-size:28px; font-weight:800; color:#065f46;">${s.sentCount}</div>
+          <div style="font-size:12px; color:#065f46;">✅ Sent</div>
+        </div>
+        <div style="background:#fee2e2; border-radius:8px; padding:14px; text-align:center;">
+          <div style="font-size:28px; font-weight:800; color:#991b1b;">${s.failedCount}</div>
+          <div style="font-size:12px; color:#991b1b;">❌ Failed</div>
+        </div>
+        <div style="background:#dbeafe; border-radius:8px; padding:14px; text-align:center;">
+          <div style="font-size:28px; font-weight:800; color:#1e40af;">${s.repliedCount}</div>
+          <div style="font-size:12px; color:#1e40af;">💬 Replied</div>
+        </div>
+      </div>
+      <div style="margin-bottom:8px; display:flex; justify-content:space-between; font-size:13px;">
+        <span>Delivery Rate</span>
+        <strong>${pct}%</strong>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div style="margin-top:16px; font-size:13px; color:#6b7280;">
+        Status: <span class="badge badge-${s.status}">${statusLabel[s.status] || s.status}</span>
+        ${s.sentAt ? `<span style="margin-left:12px;">📅 ${new Date(s.sentAt).toLocaleString('hi-IN')}</span>` : ''}
+      </div>`;
+
+    document.getElementById('campaignStatsFooter').innerHTML =
+      `<button class="btn btn-secondary" onclick="closeModal('campaignStatsModal')">बंद करें</button>`;
+  } catch (e) {
+    document.getElementById('campaignStatsBody').innerHTML =
+      '<div style="text-align:center;padding:30px;color:#ef4444;">Stats लोड नहीं हो सकी ⚠️</div>';
+  }
+}
 </script>
 </body>
 </html>
