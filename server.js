@@ -286,6 +286,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/api/conversations', checkDB, require('./routes/conversations'));
 app.use('/api/leads', checkDB, require('./routes/leads'));
 app.use('/api', checkDB, require('./routes/campaigns'));
+app.use('/api', checkDB, require('./routes/pricing'));
 
 // ─── Catch-all: serve index.html ──────────────────────────────────────────────
 app.get('*', (req, res) => {
