@@ -78,7 +78,7 @@ async function syncHotels(sheets) {
 async function syncSharedActivities(sheets) {
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: 'Shared Activities!A:E'
+    range: 'Shared_Activities!A:E'
   });
 
   const rows = res.data.values || [];
@@ -115,7 +115,7 @@ async function syncSharedActivities(sheets) {
 async function syncPrivateActivities(sheets) {
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: 'Private Activities!A:F'
+    range: 'Private_Activities!A:F'
   });
 
   const rows = res.data.values || [];
