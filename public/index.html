@@ -551,12 +551,22 @@
       flex-direction: column;
       align-items: center;
       min-width: 80px;
-      cursor: pointer;
     }
-    .crm-stat-item:hover .crm-stat-val { color: var(--primary-dark); }
     .crm-stat-val { font-size: 22px; font-weight: 800; color: var(--text); }
     .crm-stat-lbl { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 1px; }
-    .crm-stat-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+    .crm-stat-divider { width: 1px; height: 48px; background: var(--border); flex-shrink: 0; }
+    .period-btn {
+      padding: 2px 7px;
+      font-size: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .period-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .period-btn.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
 
     /* Kanban area */
     .kanban-wrapper {
@@ -1207,19 +1217,17 @@
       <div class="kanban-wrapper">
         <!-- Stats bar -->
         <div class="crm-stats-bar" id="crmStatsBar">
-          <div class="crm-stat-item" onclick="loadLeadStats()">
-            <div class="crm-stat-val" id="statToday">-</div>
-            <div class="crm-stat-lbl">आज की<br>पूछताछ</div>
-          </div>
-          <div class="crm-stat-divider"></div>
           <div class="crm-stat-item">
-            <div class="crm-stat-val" id="statWeek">-</div>
-            <div class="crm-stat-lbl">इस हफ्ते</div>
-          </div>
-          <div class="crm-stat-divider"></div>
-          <div class="crm-stat-item">
-            <div class="crm-stat-val" id="statMonth">-</div>
-            <div class="crm-stat-lbl">इस महीने</div>
+            <div class="crm-stat-val" id="statPeriodCount">-</div>
+            <div class="crm-stat-lbl">
+              पूछताछ
+              <div style="display:flex;gap:4px;margin-top:5px;">
+                <button class="period-btn active" data-period="today" onclick="switchStatPeriod(this)">आज</button>
+                <button class="period-btn" data-period="week" onclick="switchStatPeriod(this)">हफ्ता</button>
+                <button class="period-btn" data-period="month" onclick="switchStatPeriod(this)">महीना</button>
+                <button class="period-btn" data-period="year" onclick="switchStatPeriod(this)">साल</button>
+              </div>
+            </div>
           </div>
           <div class="crm-stat-divider"></div>
           <div class="crm-stat-item">
@@ -2222,20 +2230,35 @@ async function loadLeads() {
   }
 }
 
+let cachedLeadStats = null;
+let currentStatPeriod = 'today';
+
 async function loadLeadStats() {
   try {
     const res = await fetch('/api/leads/stats');
     const data = await res.json();
     if (!data.success) return;
-    const s = data.data;
-    document.getElementById('statToday').textContent = s.today || 0;
-    document.getElementById('statWeek').textContent = s.thisWeek || 0;
-    document.getElementById('statMonth').textContent = s.thisMonth || 0;
-    const rev = s.totalRevenue || 0;
-    document.getElementById('statRevenue').textContent =
-      rev >= 100000 ? '₹' + (rev/100000).toFixed(1) + 'L' : '₹' + rev.toLocaleString('en-IN');
-    document.getElementById('statConversion').textContent = (s.conversionRate || 0) + '%';
+    cachedLeadStats = data.data;
+    renderLeadStats();
   } catch (e) {}
+}
+
+function renderLeadStats() {
+  if (!cachedLeadStats) return;
+  const s = cachedLeadStats;
+  const periodMap = { today: s.today, week: s.thisWeek, month: s.thisMonth, year: s.thisYear };
+  document.getElementById('statPeriodCount').textContent = periodMap[currentStatPeriod] || 0;
+  const rev = s.totalRevenue || 0;
+  document.getElementById('statRevenue').textContent =
+    rev >= 100000 ? '₹' + (rev/100000).toFixed(1) + 'L' : '₹' + rev.toLocaleString('en-IN');
+  document.getElementById('statConversion').textContent = (s.conversionRate || 0) + '%';
+}
+
+function switchStatPeriod(btn) {
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentStatPeriod = btn.getAttribute('data-period');
+  renderLeadStats();
 }
 
 function renderKanban(grouped) {
