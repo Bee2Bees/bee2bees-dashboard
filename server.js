@@ -168,6 +168,13 @@ app.post('/api/webhook/message', async (req, res) => {
       isRead: direction === 'outgoing'
     });
 
+    // Touch Lead.lastActivityAt so the 24-hour follow-up cron works correctly
+    Lead.findOneAndUpdate(
+      { agentPhone, stage: { $in: ['new_query', 'quote_sent', 'changes_requested', 'follow_up'] } },
+      { lastActivityAt: new Date() },
+      { sort: { createdAt: -1 } }
+    ).catch(() => {});
+
     res.json({ success: true, message: 'Message saved' });
   } catch (err) {
     console.error('Webhook error:', err);
@@ -305,9 +312,44 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// ─── Background: Auto-move stale leads ───────────────────────────────────────
+// Every hour:
+//   quote_sent / changes_requested → follow_up  after 24h silence
+//   follow_up                      → lost        after 7 days silence
+function startLeadAutoMover() {
+  const run = async () => {
+    if (!dbConnected) return;
+    try {
+      const now = new Date();
+      const h24 = new Date(now - 24 * 60 * 60 * 1000);
+      const d7  = new Date(now - 7  * 24 * 60 * 60 * 1000);
+
+      const toFollowUp = await Lead.updateMany(
+        { stage: { $in: ['quote_sent', 'changes_requested'] }, lastActivityAt: { $lt: h24 } },
+        { stage: 'follow_up', lastActivityAt: now }
+      );
+
+      const toLost = await Lead.updateMany(
+        { stage: 'follow_up', lastActivityAt: { $lt: d7 } },
+        { stage: 'lost', lastActivityAt: now }
+      );
+
+      if (toFollowUp.modifiedCount || toLost.modifiedCount) {
+        console.log(`[AUTO-MOVER] follow_up: ${toFollowUp.modifiedCount}, lost: ${toLost.modifiedCount}`);
+      }
+    } catch (e) {
+      console.error('[AUTO-MOVER] error:', e.message);
+    }
+  };
+
+  run(); // run once on startup
+  setInterval(run, 60 * 60 * 1000); // then every hour
+}
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 connectDB().then(() => {
   app.listen(PORT, () => {
+    startLeadAutoMover();
     console.log(`\n🚀 Bee2Bees Dashboard running on http://localhost:${PORT}`);
     console.log(`📊 Dashboard: http://localhost:${PORT}`);
     console.log(`🔗 Webhook: POST http://localhost:${PORT}/api/webhook/message`);
