@@ -2725,6 +2725,13 @@ function updateSettingsStatus() {
     dbBadge.className = 'badge badge-resolved';
   }
 
+  // If user is logged in, Google OAuth is configured
+  const googleBadge = document.getElementById('googleStatus');
+  if (state.user) {
+    googleBadge.textContent = '✅ Configured';
+    googleBadge.className = 'badge badge-bot';
+  }
+
   // Webhook URL
   const host = window.location.origin;
   document.getElementById('webhookInfo').textContent =
