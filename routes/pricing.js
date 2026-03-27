@@ -129,14 +129,15 @@ async function syncPrivateActivities(sheets) {
     const activityName = (row[0] || '').trim();
     if (!activityName) continue;
 
+    // Columns: Activity_Name(A), Unit_Type(B), Adult_Price(C), Child_Price(D), Vehicle_Type(E), Description(F)
     await PrivateActivity.findOneAndUpdate(
-      { activityName, vehicleType: (row[1] || '').trim() },
+      { activityName, unitType: (row[1] || '').trim() },
       {
         activityName,
-        unitType: (row[2] || '').trim(),
-        adultPrice: toNum(row[3]),
-        childPrice: toNum(row[4]),
-        vehicleType: (row[1] || '').trim(),
+        unitType: (row[1] || '').trim(),
+        adultPrice: toNum(row[2]),
+        childPrice: toNum(row[3]),
+        vehicleType: (row[4] || '').trim(),
         description: (row[5] || '').trim(),
         isActive: true,
         lastSyncedAt: now
