@@ -15,10 +15,11 @@ function requireAuth(req, res, next) {
 // ── GET /api/leads — grouped by stage for kanban ──────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { search, assignedTo, source } = req.query;
+    const { search, assignedTo, source, stage } = req.query;
     const filter = {};
     if (assignedTo) filter.assignedTo = assignedTo;
     if (source) filter.source = source;
+    if (stage) filter.stage = stage;
     if (search) {
       const re = new RegExp(search, 'i');
       filter.$or = [

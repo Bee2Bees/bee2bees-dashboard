@@ -1242,8 +1242,20 @@
         </div>
         <!-- Toolbar -->
         <div class="kanban-toolbar">
-          <input type="text" id="leadSearch" class="conv-search" style="width:200px;"
+          <input type="text" id="leadSearch" class="conv-search" style="width:180px;"
             placeholder="🔍 खोजें..." oninput="debounceLoadLeads()">
+          <select id="stageFilter" class="form-control" style="width:160px;font-size:12px;" onchange="loadLeads()">
+            <option value="">📋 सभी Stages</option>
+            <option value="new_query">📩 नई पूछताछ</option>
+            <option value="quote_sent">💬 कोटेशन भेजा</option>
+            <option value="changes_requested">🔄 बदलाव चाहिए</option>
+            <option value="follow_up">📞 फॉलो अप</option>
+            <option value="booking_confirmed">✅ बुकिंग कन्फर्म</option>
+            <option value="advance_received">💰 एडवांस मिला</option>
+            <option value="voucher_sent">🎫 वाउचर भेजा</option>
+            <option value="completed">🏁 पूरा हुआ</option>
+            <option value="lost">❌ नहीं बना</option>
+          </select>
           <button class="btn btn-primary btn-sm" onclick="openNewLeadModal()">+ नई लीड</button>
           <button class="btn btn-secondary btn-sm" onclick="loadLeads()">🔄</button>
           <span id="leadTotalCount" style="font-size:12px;color:#6b7280;margin-left:auto;"></span>
@@ -2214,9 +2226,11 @@ function debounceLoadLeads() {
 
 async function loadLeads() {
   const search = document.getElementById('leadSearch')?.value || '';
+  const stage  = document.getElementById('stageFilter')?.value || '';
   try {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
+    if (stage)  params.set('stage', stage);
     const res = await fetch('/api/leads?' + params);
     if (!res.ok) throw new Error('Failed');
     const data = await res.json();
@@ -2252,6 +2266,23 @@ function renderLeadStats() {
   document.getElementById('statRevenue').textContent =
     rev >= 100000 ? '₹' + (rev/100000).toFixed(1) + 'L' : '₹' + rev.toLocaleString('en-IN');
   document.getElementById('statConversion').textContent = (s.conversionRate || 0) + '%';
+}
+
+async function updateLeadStageManual(leadId, newStage) {
+  try {
+    const res = await fetch(`/api/leads/${leadId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: newStage })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast('✅ Stage updated', 'success');
+    loadLeads();
+    loadLeadStats();
+  } catch (e) {
+    showToast('❌ Stage update failed', 'error');
+  }
 }
 
 function switchStatPeriod(btn) {
@@ -2432,7 +2463,12 @@ function renderLeadDetail(lead) {
 
     <div class="detail-section">
       <h4>📊 CRM Status</h4>
-      <div class="detail-row"><span>Stage</span><span>${stageLabel}</span></div>
+      <div class="detail-row">
+        <span>Stage</span>
+        <select onchange="updateLeadStageManual('${lead._id}', this.value)" style="font-size:12px; padding:3px 6px; border:1px solid #e4e7ec; border-radius:6px; cursor:pointer; max-width:160px;">
+          ${KANBAN_COLS.map(c => `<option value="${c.stage}" ${lead.stage === c.stage ? 'selected' : ''}>${c.label}</option>`).join('')}
+        </select>
+      </div>
       <div class="detail-row"><span>Assigned To</span><span>${esc(lead.assignedTo || '-')}</span></div>
       <div class="detail-row"><span>Source</span><span>${lead.source === 'whatsapp_bot' ? '🤖 WhatsApp Bot' : '✍️ Manual'}</span></div>
       <div class="detail-row"><span>Created</span><span>${fmt(lead.createdAt)}</span></div>
