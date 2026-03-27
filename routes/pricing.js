@@ -6,8 +6,11 @@ const Hotel = require('../models/Hotel');
 const SharedActivity = require('../models/SharedActivity');
 const PrivateActivity = require('../models/PrivateActivity');
 const Transfer = require('../models/Transfer');
+const Counter = require('../models/Counter');
 
 const SHEET_ID = process.env.GOOGLE_SHEETS_PRICING_ID || '1GT6TGIV3ZGRMPMULYYBnfV5b6tIVGSkV85PB8gNJajw';
+const DASHBOARD_SECRET = process.env.DASHBOARD_WEBHOOK_SECRET || 'bee2bees_dashboard_2026';
+const COUNTER_START = 232;
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -318,6 +321,82 @@ router.get('/sync/status', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Sync status error:', err);
     res.status(500).json({ error: 'Failed to get sync status' });
+  }
+});
+
+// ─── Bot Auth Middleware ──────────────────────────────────────────────────────
+function requireBotSecret(req, res, next) {
+  const secret = req.headers['x-dashboard-secret'];
+  if (secret !== DASHBOARD_SECRET) {
+    return res.status(403).json({ error: 'Invalid secret' });
+  }
+  next();
+}
+
+// ─── POST /api/counters/quote/next ───────────────────────────────────────────
+// Called by bot when generating a quote. Returns next serial and increments.
+// Body: { destination: "Goa" }
+// Returns: { serial: "Goa_232", number: 232 }
+router.post('/counters/quote/next', requireBotSecret, async (req, res) => {
+  try {
+    const { destination } = req.body;
+    if (!destination) return res.status(400).json({ error: 'destination required' });
+
+    const counter = await Counter.findOneAndUpdate(
+      { key: 'quote_serial' },
+      { $inc: { value: 1 } },
+      { upsert: true, new: false } // returns doc BEFORE increment
+    );
+
+    // If no doc existed yet, start from COUNTER_START
+    const number = counter ? counter.value : COUNTER_START;
+
+    // If this was the very first call and doc didn't exist, set starting value correctly
+    if (!counter) {
+      await Counter.findOneAndUpdate(
+        { key: 'quote_serial' },
+        { value: COUNTER_START + 1 },
+        { upsert: true }
+      );
+    }
+
+    const serial = `${destination}_${number}`;
+    res.json({ success: true, serial, number });
+  } catch (err) {
+    console.error('Quote serial error:', err);
+    res.status(500).json({ error: 'Failed to generate quote serial' });
+  }
+});
+
+// ─── POST /api/counters/booking/serial ───────────────────────────────────────
+// Called by bot only when booking is confirmed.
+// Does NOT increment — uses the same number as the quote.
+// Body: { destination: "Goa", quoteNumber: 232 }
+// Returns: { serial: "Bee2Bees_Goa_232" }
+router.post('/counters/booking/serial', requireBotSecret, async (req, res) => {
+  try {
+    const { destination, quoteNumber } = req.body;
+    if (!destination || quoteNumber === undefined) {
+      return res.status(400).json({ error: 'destination and quoteNumber required' });
+    }
+
+    const serial = `Bee2Bees_${destination}_${quoteNumber}`;
+    res.json({ success: true, serial });
+  } catch (err) {
+    console.error('Booking serial error:', err);
+    res.status(500).json({ error: 'Failed to generate booking serial' });
+  }
+});
+
+// ─── GET /api/counters/current ───────────────────────────────────────────────
+// Returns current counter value (for bot or dashboard to check)
+router.get('/counters/current', requireBotSecret, async (req, res) => {
+  try {
+    const counter = await Counter.findOne({ key: 'quote_serial' });
+    const current = counter ? counter.value : COUNTER_START;
+    res.json({ success: true, current, nextQuoteSerial: current });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to get counter' });
   }
 });
 
