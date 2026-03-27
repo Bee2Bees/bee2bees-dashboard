@@ -3322,10 +3322,14 @@ async function loadReports() {
     content.innerHTML = `
     <!-- Leads Card -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <h3 style="font-size:15px;font-weight:700;">👥 Leads / Queries</h3>
-        <span style="font-size:22px;font-weight:800;color:#1a1a2e;">${leads.total}</span>
+        <div style="text-align:right;">
+          <span style="font-size:22px;font-weight:800;color:#1a1a2e;">${leads.total}</span>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px;">active in period</div>
+        </div>
       </div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">📥 New queries received this period: <strong style="color:#0369a1;">${leads.received || 0}</strong></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
         ${stagePills.map(p => `<div style="background:${p.color};color:${p.tc};padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;">${p.label}: ${leads[p.key] || 0}</div>`).join('')}
       </div>

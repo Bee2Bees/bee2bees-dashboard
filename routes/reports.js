@@ -43,19 +43,28 @@ router.get('/overview', requireAuth, async (req, res) => {
   try {
     const { period = 'month', dateFrom, dateTo } = req.query;
     const { from, to } = getDateRange(period, dateFrom, dateTo);
-    const dateFilter = { createdAt: { $gte: from, $lte: to } };
     const bookingDateFilter = { bookingDate: { $gte: from, $lte: to } };
 
     // ── Leads ──
+    // Active-in-period: any lead that had activity in the period (lastActivityAt)
+    const activityFilter = { lastActivityAt: { $gte: from, $lte: to } };
+    // New queries received in period (by creation date)
+    const receivedFilter = { createdAt: { $gte: from, $lte: to } };
+
     const leadStages = ['new_query','quote_sent','changes_requested','follow_up','booking_confirmed','advance_received','voucher_sent','completed','lost'];
-    const leadAgg = await Lead.aggregate([
-      { $match: dateFilter },
-      { $group: { _id: '$stage', count: { $sum: 1 } } }
+
+    const [leadAgg, receivedCount] = await Promise.all([
+      Lead.aggregate([
+        { $match: activityFilter },
+        { $group: { _id: '$stage', count: { $sum: 1 } } }
+      ]),
+      Lead.countDocuments(receivedFilter)
     ]);
+
     const leadMap = {};
     leadAgg.forEach(l => { leadMap[l._id] = l.count; });
     const leadsTotal = leadAgg.reduce((s, l) => s + l.count, 0);
-    const leads = { total: leadsTotal };
+    const leads = { total: leadsTotal, received: receivedCount };
     leadStages.forEach(s => { leads[s] = leadMap[s] || 0; });
 
     // ── Bookings ──
@@ -114,9 +123,9 @@ router.get('/overview', requireAuth, async (req, res) => {
       { $sort: { revenue: -1 } },
       { $limit: 10 }
     ]);
-    // Also get lead counts per agent
+    // Also get lead counts per agent (active in period)
     const agentLeadAgg = await Lead.aggregate([
-      { $match: dateFilter },
+      { $match: activityFilter },
       { $group: { _id: '$agentPhone', leads: { $sum: 1 } } }
     ]);
     const agentLeadMap = {};
@@ -143,8 +152,7 @@ router.get('/overview', requireAuth, async (req, res) => {
       { $sort: { revenue: -1 } }
     ]);
     const staffLeadAgg = await Lead.aggregate([
-      { $match: dateFilter },
-      { $match: { assignedTo: { $exists: true, $ne: '' } } },
+      { $match: { ...activityFilter, assignedTo: { $exists: true, $ne: '' } } },
       { $group: { _id: '$assignedTo', leads: { $sum: 1 } } }
     ]);
     const staffLeadMap = {};
