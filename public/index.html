@@ -568,6 +568,24 @@
     .period-btn:hover { border-color: var(--primary); color: var(--primary); }
     .period-btn.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
 
+    /* ── BOOKING FORM ── */
+    .bk-section { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #f3f4f6; }
+    .bk-section:last-child { border-bottom: none; }
+    .bk-section-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; }
+    .bk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 700px) { .bk-grid { grid-template-columns: 1fr 1fr; } }
+    .bk-field label { display: block; font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .bk-field .form-control { width: 100%; }
+    .bk-hotel-block { background: #f9fafb; border: 1px solid #e4e7ec; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+    .bk-hotel-block h4 { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 10px; }
+    .bk-itin-block { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 14px; margin-bottom: 10px; position: relative; }
+    .bk-itin-block h4 { font-size: 12px; font-weight: 700; color: #0369a1; margin-bottom: 10px; }
+    .bk-payment-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f3f4f6; }
+    .bk-remove-btn { background: none; border: none; color: #ef4444; font-size: 16px; cursor: pointer; padding: 0; }
+    .bk-status-confirmed { background: #d1fae5; color: #065f46; }
+    .bk-status-onhold    { background: #fef3c7; color: #92400e; }
+    .bk-status-cancelled { background: #fee2e2; color: #991b1b; }
+
     /* Kanban area */
     .kanban-wrapper {
       display: flex;
@@ -1146,6 +1164,10 @@
         <span class="icon">💰</span>
         <span>प्राइसिंग <small>(Pricing)</small></span>
       </div>
+      <div class="nav-item" data-page="bookings">
+        <span class="icon">📋</span>
+        <span>बुकिंग्स <small>(Bookings)</small></span>
+      </div>
       <div class="nav-item" data-page="settings">
         <span class="icon">⚙️</span>
         <span>सेटिंग्स <small>(Settings)</small></span>
@@ -1370,6 +1392,303 @@
           <div id="campaignsList">
             <div style="text-align:center; padding:40px; color:#9ca3af;">लोड हो रहा है...</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BOOKINGS PAGE ── -->
+    <div id="bookingsPage" class="page">
+      <div class="page-header">
+        <div>
+          <h1>📋 कन्फर्म्ड बुकिंग्स</h1>
+          <p>सभी confirmed bookings देखें और manage करें</p>
+        </div>
+        <button class="btn btn-primary" onclick="openBookingForm()">+ नई बुकिंग</button>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:12px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
+        <input type="text" id="bookingSearch" class="conv-search" style="width:220px;" placeholder="🔍 Serial, Agent, Customer..." oninput="loadBookings()">
+        <select id="bookingStatusFilter" class="form-control" style="width:140px;" onchange="loadBookings()">
+          <option value="">📊 सभी Status</option>
+          <option value="Confirmed">✅ Confirmed</option>
+          <option value="On Hold">⏳ On Hold</option>
+          <option value="Cancelled">❌ Cancelled</option>
+        </select>
+        <select id="bookingTypeFilter" class="form-control" style="width:120px;" onchange="loadBookings()">
+          <option value="">👥 B2B + B2C</option>
+          <option value="B2B">🏢 B2B</option>
+          <option value="B2C">👤 B2C</option>
+        </select>
+        <select id="bookingDestFilter" class="form-control" style="width:140px;" onchange="loadBookings()">
+          <option value="">🗺️ सभी Destinations</option>
+          <option value="Goa">🏖️ Goa</option>
+          <option value="Himachal">🏔️ Himachal</option>
+          <option value="Other">📍 Other</option>
+        </select>
+        <span style="margin-left:auto; font-size:12px; color:#6b7280;" id="bookingCount"></span>
+      </div>
+
+      <!-- List -->
+      <div style="flex:1; overflow-y:auto; padding:16px 20px;">
+        <table id="bookingsTable" style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="background:#f9fafb; text-align:left; position:sticky; top:0;">
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Serial</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Date</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Type</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Agent / Customer</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Destination</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Booking Type</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec; text-align:right;">Total</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec; text-align:right;">Pending</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Status</th>
+              <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;"></th>
+            </tr>
+          </thead>
+          <tbody id="bookingsBody">
+            <tr><td colspan="10" style="text-align:center; padding:40px; color:#9ca3af;">लोड हो रहा है...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── BOOKING FORM MODAL ── -->
+    <div id="bookingFormModal" class="modal-overlay hidden">
+      <div class="modal" style="max-width:900px; width:96%; max-height:92vh; overflow-y:auto; padding:0;">
+
+        <!-- Modal Header -->
+        <div style="padding:18px 24px; border-bottom:1px solid #e4e7ec; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:10;">
+          <h2 id="bookingFormTitle" style="font-size:17px; font-weight:700;">📋 नई बुकिंग</h2>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="bkQueryType" class="form-control" style="width:110px; font-weight:600;" onchange="onQueryTypeChange()">
+              <option value="B2B">🏢 B2B</option>
+              <option value="B2C">👤 B2C</option>
+            </select>
+            <button onclick="closeModal('bookingFormModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">✕</button>
+          </div>
+        </div>
+
+        <div style="padding:20px 24px;">
+
+          <!-- Section 1: Basic Info -->
+          <div class="bk-section">
+            <h3 class="bk-section-title">📝 Basic Information</h3>
+            <div class="bk-grid">
+              <div class="bk-field">
+                <label>Booking Serial Number</label>
+                <input type="text" id="bkSerial" class="form-control" placeholder="e.g. Bee2Bees_Goa_232">
+              </div>
+              <div class="bk-field">
+                <label>Booking Date</label>
+                <input type="date" id="bkDate" class="form-control">
+              </div>
+              <div class="bk-field">
+                <label>Booking Status</label>
+                <select id="bkStatus" class="form-control">
+                  <option value="Confirmed">✅ Confirmed</option>
+                  <option value="On Hold">⏳ On Hold</option>
+                  <option value="Cancelled">❌ Cancelled</option>
+                </select>
+              </div>
+              <div class="bk-field">
+                <label>Assigned To</label>
+                <select id="bkAssignedTo" class="form-control">
+                  <option value="">-- Select --</option>
+                  <option value="Tara">Tara</option>
+                  <option value="Sachin">Sachin</option>
+                  <option value="Jyoti">Jyoti</option>
+                  <option value="Suman">Suman</option>
+                  <option value="Gineeta">Gineeta</option>
+                </select>
+              </div>
+              <div class="bk-field bk-b2b-only">
+                <label>Agent Name</label>
+                <input type="text" id="bkAgentName" class="form-control" placeholder="Agent name">
+              </div>
+              <div class="bk-field bk-b2b-only">
+                <label>Agent Number</label>
+                <input type="tel" id="bkAgentNumber" class="form-control" placeholder="+91XXXXXXXXXX">
+              </div>
+              <div class="bk-field bk-b2b-only">
+                <label>Invoice Number</label>
+                <input type="text" id="bkInvoiceNumber" class="form-control" placeholder="INV-001">
+              </div>
+              <div class="bk-field">
+                <label>Customer Name</label>
+                <input type="text" id="bkCustomerName" class="form-control" placeholder="Customer name">
+              </div>
+              <div class="bk-field">
+                <label>Customer Number</label>
+                <input type="tel" id="bkCustomerNumber" class="form-control" placeholder="+91XXXXXXXXXX">
+              </div>
+              <div class="bk-field">
+                <label>Quote Serial (if from bot)</label>
+                <input type="text" id="bkQuoteSerial" class="form-control" placeholder="e.g. Goa_232">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Destination & Type -->
+          <div class="bk-section">
+            <h3 class="bk-section-title">🗺️ Destination & Booking Type</h3>
+            <div class="bk-grid">
+              <div class="bk-field">
+                <label>Destination</label>
+                <select id="bkDestination" class="form-control" onchange="onDestinationChange()">
+                  <option value="Goa">🏖️ Goa</option>
+                  <option value="Himachal">🏔️ Himachal</option>
+                  <option value="Other">📍 Other</option>
+                </select>
+              </div>
+              <div class="bk-field" id="bkDestOtherWrap" style="display:none;">
+                <label>Please Specify Destination</label>
+                <input type="text" id="bkDestOther" class="form-control" placeholder="Destination name">
+              </div>
+              <div class="bk-field">
+                <label>Booking Type</label>
+                <select id="bkBookingType" class="form-control" onchange="onBookingTypeChange()">
+                  <option value="Full Package">🎒 Full Package</option>
+                  <option value="Transport Package">🚗 Transport Package</option>
+                  <option value="Transport Only">🚌 Transport Only</option>
+                  <option value="Hotel Only">🏨 Hotel Only</option>
+                  <option value="Others">📦 Others</option>
+                </select>
+              </div>
+              <div class="bk-field" id="bkTypeOtherWrap" style="display:none;">
+                <label>Please Specify Booking Type</label>
+                <input type="text" id="bkTypeOther" class="form-control" placeholder="Booking type">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Pax -->
+          <div class="bk-section">
+            <h3 class="bk-section-title">👥 Passenger Details</h3>
+            <div class="bk-grid">
+              <div class="bk-field">
+                <label>No. of Adults</label>
+                <input type="number" id="bkAdults" class="form-control" value="1" min="0">
+              </div>
+              <div class="bk-field">
+                <label>No. of Kids (5-11 yrs)</label>
+                <input type="number" id="bkKids" class="form-control" value="0" min="0" oninput="renderKidsAges()">
+              </div>
+              <div class="bk-field">
+                <label>No. of Child (0-4 yrs)</label>
+                <input type="number" id="bkChild" class="form-control" value="0" min="0">
+              </div>
+            </div>
+            <div id="bkKidsAgesWrap" style="display:none; margin-top:10px;">
+              <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">Kids Ages</label>
+              <div id="bkKidsAgesFields" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+            </div>
+          </div>
+
+          <!-- Section 4: Transport (shown for Transport Package / Transport Only) -->
+          <div class="bk-section" id="bkTransportSection" style="display:none;">
+            <h3 class="bk-section-title">🚗 Transport Details</h3>
+            <div class="bk-grid">
+              <div class="bk-field">
+                <label>Vehicle Type</label>
+                <select id="bkVehicleType" class="form-control">
+                  <option value="">-- Select --</option>
+                  <option value="Sedan">Sedan</option>
+                  <option value="Ertiga">Ertiga</option>
+                  <option value="Innova">Innova</option>
+                  <option value="Tempo Traveller">Tempo Traveller</option>
+                  <option value="Bus">Bus</option>
+                </select>
+              </div>
+              <div class="bk-field">
+                <label>Pickup Location</label>
+                <input type="text" id="bkPickupLocation" class="form-control" placeholder="e.g. Dabolim Airport">
+              </div>
+              <div class="bk-field">
+                <label>Pickup Time</label>
+                <input type="time" id="bkPickupTime" class="form-control">
+              </div>
+              <div class="bk-field">
+                <label>Drop Location</label>
+                <input type="text" id="bkDropLocation" class="form-control" placeholder="e.g. Madgaon Railway">
+              </div>
+              <div class="bk-field">
+                <label>Drop Time</label>
+                <input type="time" id="bkDropTime" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Hotels (Full Package / Hotel Only) -->
+          <div class="bk-section" id="bkHotelsSection">
+            <h3 class="bk-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+              🏨 Hotel Details
+              <div style="display:flex; align-items:center; gap:10px;">
+                <label style="font-size:12px; font-weight:500; color:#6b7280; margin:0;">Hotels:</label>
+                <select id="bkHotelCount" class="form-control" style="width:70px;" onchange="renderHotelFields()">
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+            </h3>
+            <div id="bkHotelFields"></div>
+          </div>
+
+          <!-- Section 6: Day-wise Itinerary (not for Hotel Only) -->
+          <div class="bk-section" id="bkItinerarySection">
+            <h3 class="bk-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+              🗓️ Day-wise Itinerary
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addItineraryDay()">+ Add Day</button>
+            </h3>
+            <div id="bkItineraryFields">
+              <p style="font-size:12px; color:#9ca3af; padding:8px 0;">Click "+ Add Day" to add itinerary days.</p>
+            </div>
+          </div>
+
+          <!-- Section 7: Payment Details -->
+          <div class="bk-section">
+            <h3 class="bk-section-title">💰 Payment Details</h3>
+            <div class="bk-grid">
+              <div class="bk-field">
+                <label>Total Cost (₹)</label>
+                <input type="number" id="bkTotalCost" class="form-control" placeholder="0" oninput="calcPending()">
+              </div>
+              <div class="bk-field">
+                <label>Received (₹)</label>
+                <input type="number" id="bkReceived" class="form-control" placeholder="0" oninput="calcPending()">
+              </div>
+              <div class="bk-field">
+                <label>Pending (₹)</label>
+                <input type="number" id="bkPending" class="form-control" placeholder="0" readonly style="background:#f9fafb; font-weight:700; color:#dc2626;">
+              </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div style="margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <label style="font-size:13px; font-weight:600; color:#374151;">Payment Summary</label>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addPaymentRow()">+ Add Payment</button>
+              </div>
+              <div id="bkPaymentRows">
+                <p style="font-size:12px; color:#9ca3af; padding:4px 0;">Click "+ Add Payment" to add payment entries.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 8: Remarks -->
+          <div class="bk-section">
+            <h3 class="bk-section-title">📝 Remarks & Special Instructions</h3>
+            <textarea id="bkRemarks" class="form-control" rows="3" placeholder="Any special instructions, notes, or requests..." style="resize:vertical;"></textarea>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="padding:16px 24px; border-top:1px solid #e4e7ec; display:flex; justify-content:flex-end; gap:10px; position:sticky; bottom:0; background:#fff;">
+          <button class="btn btn-secondary" onclick="closeModal('bookingFormModal')">रद्द करें</button>
+          <button class="btn btn-primary" onclick="saveBooking()" id="bkSaveBtn">💾 Save Booking</button>
         </div>
       </div>
     </div>
@@ -1910,6 +2229,7 @@ function switchPage(page) {
   if (page === 'reports') loadStats();
   if (page === 'campaigns') { loadContacts(); loadCampaigns(); }
   if (page === 'pricing') { loadPricingStatus(); loadHotels(); }
+  if (page === 'bookings') loadBookings();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -3518,6 +3838,484 @@ async function syncPricingSheets() {
   } finally {
     btn.disabled = false;
     btn.textContent = '🔄 Google Sheets Sync';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// BOOKINGS
+// ═══════════════════════════════════════════════════════════
+let bkEditId = null;
+let bkItineraryDays = [];
+let bkPaymentRows = [];
+
+async function loadBookings() {
+  const search = document.getElementById('bookingSearch')?.value || '';
+  const status = document.getElementById('bookingStatusFilter')?.value || '';
+  const queryType = document.getElementById('bookingTypeFilter')?.value || '';
+  const destination = document.getElementById('bookingDestFilter')?.value || '';
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  if (queryType) params.set('queryType', queryType);
+  if (destination) params.set('destination', destination);
+
+  const tbody = document.getElementById('bookingsBody');
+  try {
+    const res = await fetch('/api/bookings?' + params);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    const bookings = data.data;
+    document.getElementById('bookingCount').textContent = `${bookings.length} bookings`;
+
+    if (!bookings.length) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#9ca3af;">कोई booking नहीं मिली।</td></tr>';
+      return;
+    }
+
+    const statusColors = { 'Confirmed': '#d1fae5', 'On Hold': '#fef3c7', 'Cancelled': '#fee2e2' };
+    const statusText = { 'Confirmed': '✅ Confirmed', 'On Hold': '⏳ On Hold', 'Cancelled': '❌ Cancelled' };
+    tbody.innerHTML = bookings.map(b => {
+      const dest = b.destination === 'Other' ? (b.destinationOther || 'Other') : b.destination;
+      const person = b.queryType === 'B2B' ? (b.agentName || b.agentNumber || '-') : (b.customerName || b.customerNumber || '-');
+      const bg = statusColors[b.bookingStatus] || '#f3f4f6';
+      return `<tr style="border-bottom:1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+        <td style="padding:10px 12px; font-weight:600;">${esc(b.bookingSerial || '-')}</td>
+        <td style="padding:10px 12px; color:#6b7280; font-size:12px;">${b.bookingDate ? new Date(b.bookingDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td style="padding:10px 12px;"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${b.queryType==='B2B'?'#dbeafe':'#ede9fe'};font-weight:600;">${b.queryType}</span></td>
+        <td style="padding:10px 12px; font-size:12px;">${esc(person)}</td>
+        <td style="padding:10px 12px;">${esc(dest)}</td>
+        <td style="padding:10px 12px; font-size:12px; color:#6b7280;">${esc(b.bookingType || '-')}</td>
+        <td style="padding:10px 12px; text-align:right; font-weight:600;">₹${(b.totalCost||0).toLocaleString('en-IN')}</td>
+        <td style="padding:10px 12px; text-align:right; font-weight:700; color:${b.pending>0?'#dc2626':'#16a34a'};">₹${(b.pending||0).toLocaleString('en-IN')}</td>
+        <td style="padding:10px 12px;"><span style="font-size:11px;padding:3px 8px;border-radius:10px;background:${bg};">${statusText[b.bookingStatus]||b.bookingStatus}</span></td>
+        <td style="padding:10px 12px;">
+          <button class="btn btn-secondary btn-sm" onclick="editBooking('${b._id}')">✏️</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-left:4px;" onclick="deleteBooking('${b._id}')">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#ef4444;">Error loading bookings ⚠️</td></tr>';
+    console.error(e);
+  }
+}
+
+function openBookingForm(id = null) {
+  bkEditId = id;
+  bkItineraryDays = [];
+  bkPaymentRows = [];
+
+  // Reset form
+  document.getElementById('bookingFormTitle').textContent = id ? '✏️ बुकिंग Edit करें' : '📋 नई बुकिंग';
+  document.getElementById('bkQueryType').value = 'B2B';
+  document.getElementById('bkSerial').value = '';
+  document.getElementById('bkDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('bkStatus').value = 'Confirmed';
+  document.getElementById('bkAssignedTo').value = '';
+  document.getElementById('bkAgentName').value = '';
+  document.getElementById('bkAgentNumber').value = '';
+  document.getElementById('bkInvoiceNumber').value = '';
+  document.getElementById('bkCustomerName').value = '';
+  document.getElementById('bkCustomerNumber').value = '';
+  document.getElementById('bkQuoteSerial').value = '';
+  document.getElementById('bkDestination').value = 'Goa';
+  document.getElementById('bkDestOther').value = '';
+  document.getElementById('bkDestOtherWrap').style.display = 'none';
+  document.getElementById('bkBookingType').value = 'Full Package';
+  document.getElementById('bkTypeOther').value = '';
+  document.getElementById('bkTypeOtherWrap').style.display = 'none';
+  document.getElementById('bkAdults').value = 1;
+  document.getElementById('bkKids').value = 0;
+  document.getElementById('bkChild').value = 0;
+  document.getElementById('bkKidsAgesWrap').style.display = 'none';
+  document.getElementById('bkKidsAgesFields').innerHTML = '';
+  document.getElementById('bkVehicleType').value = '';
+  document.getElementById('bkPickupLocation').value = '';
+  document.getElementById('bkPickupTime').value = '';
+  document.getElementById('bkDropLocation').value = '';
+  document.getElementById('bkDropTime').value = '';
+  document.getElementById('bkHotelCount').value = '1';
+  document.getElementById('bkTotalCost').value = '';
+  document.getElementById('bkReceived').value = '';
+  document.getElementById('bkPending').value = '';
+  document.getElementById('bkRemarks').value = '';
+  document.getElementById('bkPaymentRows').innerHTML = '<p style="font-size:12px;color:#9ca3af;padding:4px 0;">Click "+ Add Payment" to add payment entries.</p>';
+  document.getElementById('bkItineraryFields').innerHTML = '<p style="font-size:12px;color:#9ca3af;padding:8px 0;">Click "+ Add Day" to add itinerary days.</p>';
+
+  onQueryTypeChange();
+  onBookingTypeChange();
+  renderHotelFields();
+
+  document.getElementById('bookingFormModal').classList.remove('hidden');
+}
+
+function onQueryTypeChange() {
+  const isB2B = document.getElementById('bkQueryType').value === 'B2B';
+  document.querySelectorAll('.bk-b2b-only').forEach(el => {
+    el.style.display = isB2B ? '' : 'none';
+  });
+}
+
+function onDestinationChange() {
+  const val = document.getElementById('bkDestination').value;
+  document.getElementById('bkDestOtherWrap').style.display = val === 'Other' ? '' : 'none';
+}
+
+function onBookingTypeChange() {
+  const val = document.getElementById('bkBookingType').value;
+  document.getElementById('bkTypeOtherWrap').style.display = val === 'Others' ? '' : 'none';
+  // Transport section: show for Transport Package and Transport Only
+  const showTransport = val === 'Transport Package' || val === 'Transport Only';
+  document.getElementById('bkTransportSection').style.display = showTransport ? '' : 'none';
+  // Hotels section: show for Full Package, Transport Package, Hotel Only
+  const showHotels = val !== 'Transport Only' && val !== 'Others';
+  document.getElementById('bkHotelsSection').style.display = showHotels ? '' : 'none';
+  // Itinerary section: hide for Hotel Only
+  const showItinerary = val !== 'Hotel Only';
+  document.getElementById('bkItinerarySection').style.display = showItinerary ? '' : 'none';
+}
+
+function renderHotelFields() {
+  const count = parseInt(document.getElementById('bkHotelCount').value) || 1;
+  const container = document.getElementById('bkHotelFields');
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += `<div class="bk-hotel-block">
+      <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:8px;">🏨 Hotel ${count > 1 ? i+1 : ''}</div>
+      <div class="bk-grid">
+        <div class="bk-field"><label>Hotel Name</label><input type="text" id="bkHotel_${i}_name" class="form-control" placeholder="Hotel name"></div>
+        <div class="bk-field"><label>Check-in</label><input type="date" id="bkHotel_${i}_checkIn" class="form-control"></div>
+        <div class="bk-field"><label>Check-out</label><input type="date" id="bkHotel_${i}_checkOut" class="form-control"></div>
+        <div class="bk-field"><label>Nights</label><input type="number" id="bkHotel_${i}_nights" class="form-control" value="1" min="0"></div>
+        <div class="bk-field"><label>Room Type</label><input type="text" id="bkHotel_${i}_roomType" class="form-control" placeholder="e.g. Deluxe Double"></div>
+        <div class="bk-field"><label>Breakfast</label>
+          <select id="bkHotel_${i}_breakfast" class="form-control">
+            <option value="Yes">Yes</option><option value="No">No</option>
+          </select></div>
+        <div class="bk-field"><label>Adult Extra Mattress</label><input type="number" id="bkHotel_${i}_adultEM" class="form-control" value="0" min="0"></div>
+        <div class="bk-field"><label>Child Extra Mattress</label><input type="number" id="bkHotel_${i}_childEM" class="form-control" value="0" min="0"></div>
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html || '<p style="font-size:12px;color:#9ca3af;">No hotels.</p>';
+}
+
+function renderKidsAges() {
+  const kids = parseInt(document.getElementById('bkKids').value) || 0;
+  const wrap = document.getElementById('bkKidsAgesWrap');
+  const fields = document.getElementById('bkKidsAgesFields');
+  if (kids <= 0) { wrap.style.display = 'none'; fields.innerHTML = ''; return; }
+  wrap.style.display = '';
+  let html = '';
+  for (let i = 0; i < kids; i++) {
+    html += `<div style="display:flex;flex-direction:column;gap:3px;">
+      <label style="font-size:11px;color:#6b7280;">Kid ${i+1} Age</label>
+      <input type="number" id="bkKidAge_${i}" class="form-control" style="width:70px;" value="" min="5" max="11" placeholder="Age">
+    </div>`;
+  }
+  fields.innerHTML = html;
+}
+
+function addItineraryDay() {
+  const idx = bkItineraryDays.length;
+  bkItineraryDays.push(idx);
+  renderItineraryFields();
+}
+
+function removeItineraryDay(i) {
+  bkItineraryDays.splice(i, 1);
+  renderItineraryFields();
+}
+
+function renderItineraryFields() {
+  const container = document.getElementById('bkItineraryFields');
+  if (!bkItineraryDays.length) {
+    container.innerHTML = '<p style="font-size:12px;color:#9ca3af;padding:8px 0;">Click "+ Add Day" to add itinerary days.</p>';
+    return;
+  }
+  let html = bkItineraryDays.map((_, i) => `
+    <div class="bk-itin-block">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;font-weight:600;color:#374151;">Day ${i+1}</span>
+        <button type="button" onclick="removeItineraryDay(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:13px;">✕ Remove</button>
+      </div>
+      <div class="bk-grid">
+        <div class="bk-field"><label>Date</label><input type="date" id="bkDay_${i}_date" class="form-control"></div>
+        <div class="bk-field"><label>Activity</label><input type="text" id="bkDay_${i}_activity" class="form-control" placeholder="e.g. North Goa Tour"></div>
+        <div class="bk-field" style="grid-column:span 2"><label>Description</label><input type="text" id="bkDay_${i}_desc" class="form-control" placeholder="Activity details..."></div>
+        <div class="bk-field"><label>Lunch</label>
+          <select id="bkDay_${i}_lunch" class="form-control">
+            <option value="None">None</option><option value="At Hotel">At Hotel</option><option value="Outside">Outside</option>
+          </select></div>
+        <div class="bk-field"><label>Dinner</label>
+          <select id="bkDay_${i}_dinner" class="form-control">
+            <option value="None">None</option><option value="At Hotel">At Hotel</option><option value="Outside">Outside</option>
+          </select></div>
+      </div>
+    </div>`).join('');
+  container.innerHTML = html;
+}
+
+function addPaymentRow() {
+  const idx = bkPaymentRows.length;
+  bkPaymentRows.push(idx);
+  renderPaymentRows();
+}
+
+function removePaymentRow(i) {
+  bkPaymentRows.splice(i, 1);
+  renderPaymentRows();
+}
+
+function renderPaymentRows() {
+  const container = document.getElementById('bkPaymentRows');
+  if (!bkPaymentRows.length) {
+    container.innerHTML = '<p style="font-size:12px;color:#9ca3af;padding:4px 0;">Click "+ Add Payment" to add payment entries.</p>';
+    return;
+  }
+  let html = bkPaymentRows.map((_, i) => `
+    <div class="bk-payment-row">
+      <div class="bk-field" style="min-width:120px;"><label>Date</label><input type="date" id="bkPay_${i}_date" class="form-control"></div>
+      <div class="bk-field" style="min-width:120px;"><label>Amount (₹)</label><input type="number" id="bkPay_${i}_amount" class="form-control" placeholder="0"></div>
+      <div class="bk-field" style="min-width:140px;"><label>Method</label>
+        <select id="bkPay_${i}_method" class="form-control">
+          <option value="UPI">UPI</option><option value="Net Banking">Net Banking</option>
+          <option value="Credit Card">Credit Card</option><option value="Debit Card">Debit Card</option>
+        </select></div>
+      <div class="bk-field" style="min-width:160px;"><label>Bank/Account</label>
+        <select id="bkPay_${i}_bank" class="form-control">
+          <option value="Bee2Bees">Bee2Bees</option><option value="Tara Personal">Tara Personal</option>
+          <option value="Mummy Personal">Mummy Personal</option><option value="Sachin Personal">Sachin Personal</option>
+          <option value="Taku">Taku</option>
+        </select></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
+        <button type="button" onclick="removePaymentRow(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;line-height:1;">✕</button>
+      </div>
+    </div>`).join('');
+  container.innerHTML = html;
+}
+
+function calcPending() {
+  const total = parseFloat(document.getElementById('bkTotalCost').value) || 0;
+  const received = parseFloat(document.getElementById('bkReceived').value) || 0;
+  document.getElementById('bkPending').value = total - received;
+}
+
+async function saveBooking() {
+  const btn = document.getElementById('bkSaveBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving...';
+
+  try {
+    const qType = document.getElementById('bkQueryType').value;
+    const hotelCount = parseInt(document.getElementById('bkHotelCount').value) || 1;
+    const kidsCount = parseInt(document.getElementById('bkKids').value) || 0;
+    const bkType = document.getElementById('bkBookingType').value;
+
+    // Collect hotel data
+    const hotels = [];
+    if (['Full Package', 'Transport Package', 'Hotel Only'].includes(bkType)) {
+      for (let i = 0; i < hotelCount; i++) {
+        hotels.push({
+          hotelName: document.getElementById(`bkHotel_${i}_name`)?.value || '',
+          checkIn: document.getElementById(`bkHotel_${i}_checkIn`)?.value || null,
+          checkOut: document.getElementById(`bkHotel_${i}_checkOut`)?.value || null,
+          nights: parseInt(document.getElementById(`bkHotel_${i}_nights`)?.value) || 0,
+          roomType: document.getElementById(`bkHotel_${i}_roomType`)?.value || '',
+          breakfastIncluded: document.getElementById(`bkHotel_${i}_breakfast`)?.value || 'Yes',
+          adultExtraMattress: parseInt(document.getElementById(`bkHotel_${i}_adultEM`)?.value) || 0,
+          childExtraMattress: parseInt(document.getElementById(`bkHotel_${i}_childEM`)?.value) || 0
+        });
+      }
+    }
+
+    // Collect itinerary data
+    const itinerary = bkItineraryDays.map((_, i) => ({
+      day: i + 1,
+      date: document.getElementById(`bkDay_${i}_date`)?.value || null,
+      activity: document.getElementById(`bkDay_${i}_activity`)?.value || '',
+      activityDescription: document.getElementById(`bkDay_${i}_desc`)?.value || '',
+      lunchIncluded: document.getElementById(`bkDay_${i}_lunch`)?.value || 'None',
+      dinnerIncluded: document.getElementById(`bkDay_${i}_dinner`)?.value || 'None'
+    }));
+
+    // Collect payment rows
+    const payments = bkPaymentRows.map((_, i) => ({
+      serialNo: i + 1,
+      paymentDate: document.getElementById(`bkPay_${i}_date`)?.value || null,
+      amount: parseFloat(document.getElementById(`bkPay_${i}_amount`)?.value) || 0,
+      paymentMethod: document.getElementById(`bkPay_${i}_method`)?.value || 'UPI',
+      bank: document.getElementById(`bkPay_${i}_bank`)?.value || 'Bee2Bees'
+    }));
+
+    // Collect kids ages
+    const kidsAges = [];
+    for (let i = 0; i < kidsCount; i++) {
+      const age = parseInt(document.getElementById(`bkKidAge_${i}`)?.value);
+      if (age) kidsAges.push(age);
+    }
+
+    const body = {
+      queryType: qType,
+      bookingSerial: document.getElementById('bkSerial').value.trim(),
+      bookingDate: document.getElementById('bkDate').value || null,
+      bookingStatus: document.getElementById('bkStatus').value,
+      assignedTo: document.getElementById('bkAssignedTo').value,
+      invoiceNumber: document.getElementById('bkInvoiceNumber').value.trim(),
+      agentName: document.getElementById('bkAgentName').value.trim(),
+      agentNumber: document.getElementById('bkAgentNumber').value.trim(),
+      customerName: document.getElementById('bkCustomerName').value.trim(),
+      customerNumber: document.getElementById('bkCustomerNumber').value.trim(),
+      quoteSerial: document.getElementById('bkQuoteSerial').value.trim(),
+      destination: document.getElementById('bkDestination').value,
+      destinationOther: document.getElementById('bkDestOther').value.trim(),
+      bookingType: bkType,
+      bookingTypeOther: document.getElementById('bkTypeOther').value.trim(),
+      adults: parseInt(document.getElementById('bkAdults').value) || 0,
+      kids: kidsCount,
+      child: parseInt(document.getElementById('bkChild').value) || 0,
+      kidsAges,
+      vehicleType: document.getElementById('bkVehicleType').value,
+      pickupLocation: document.getElementById('bkPickupLocation').value.trim(),
+      pickupTime: document.getElementById('bkPickupTime').value,
+      dropLocation: document.getElementById('bkDropLocation').value.trim(),
+      dropTime: document.getElementById('bkDropTime').value,
+      hotels,
+      itinerary,
+      totalCost: parseFloat(document.getElementById('bkTotalCost').value) || 0,
+      received: parseFloat(document.getElementById('bkReceived').value) || 0,
+      payments,
+      remarks: document.getElementById('bkRemarks').value.trim()
+    };
+
+    const url = bkEditId ? `/api/bookings/${bkEditId}` : '/api/bookings';
+    const method = bkEditId ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    closeModal('bookingFormModal');
+    showToast(bkEditId ? '✅ Booking updated!' : '✅ Booking saved!', 'success');
+    loadBookings();
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save Booking';
+  }
+}
+
+async function editBooking(id) {
+  try {
+    const res = await fetch(`/api/bookings/${id}`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    const b = data.data;
+
+    openBookingForm(id);
+
+    // Fill in all fields after modal opens
+    document.getElementById('bkQueryType').value = b.queryType || 'B2B';
+    onQueryTypeChange();
+    document.getElementById('bkSerial').value = b.bookingSerial || '';
+    document.getElementById('bkDate').value = b.bookingDate ? new Date(b.bookingDate).toISOString().split('T')[0] : '';
+    document.getElementById('bkStatus').value = b.bookingStatus || 'Confirmed';
+    document.getElementById('bkAssignedTo').value = b.assignedTo || '';
+    document.getElementById('bkAgentName').value = b.agentName || '';
+    document.getElementById('bkAgentNumber').value = b.agentNumber || '';
+    document.getElementById('bkInvoiceNumber').value = b.invoiceNumber || '';
+    document.getElementById('bkCustomerName').value = b.customerName || '';
+    document.getElementById('bkCustomerNumber').value = b.customerNumber || '';
+    document.getElementById('bkQuoteSerial').value = b.quoteSerial || '';
+    document.getElementById('bkDestination').value = b.destination || 'Goa';
+    onDestinationChange();
+    document.getElementById('bkDestOther').value = b.destinationOther || '';
+    document.getElementById('bkBookingType').value = b.bookingType || 'Full Package';
+    onBookingTypeChange();
+    document.getElementById('bkTypeOther').value = b.bookingTypeOther || '';
+    document.getElementById('bkAdults').value = b.adults || 0;
+    document.getElementById('bkKids').value = b.kids || 0;
+    document.getElementById('bkChild').value = b.child || 0;
+    renderKidsAges();
+    if (b.kidsAges && b.kidsAges.length) {
+      b.kidsAges.forEach((age, i) => {
+        const el = document.getElementById(`bkKidAge_${i}`);
+        if (el) el.value = age;
+      });
+    }
+    document.getElementById('bkVehicleType').value = b.vehicleType || '';
+    document.getElementById('bkPickupLocation').value = b.pickupLocation || '';
+    document.getElementById('bkPickupTime').value = b.pickupTime || '';
+    document.getElementById('bkDropLocation').value = b.dropLocation || '';
+    document.getElementById('bkDropTime').value = b.dropTime || '';
+
+    // Hotels
+    const hotelCount = (b.hotels && b.hotels.length) || 1;
+    document.getElementById('bkHotelCount').value = hotelCount;
+    renderHotelFields();
+    if (b.hotels) {
+      b.hotels.forEach((h, i) => {
+        const f = id => document.getElementById(id);
+        if (f(`bkHotel_${i}_name`)) f(`bkHotel_${i}_name`).value = h.hotelName || '';
+        if (f(`bkHotel_${i}_checkIn`)) f(`bkHotel_${i}_checkIn`).value = h.checkIn ? new Date(h.checkIn).toISOString().split('T')[0] : '';
+        if (f(`bkHotel_${i}_checkOut`)) f(`bkHotel_${i}_checkOut`).value = h.checkOut ? new Date(h.checkOut).toISOString().split('T')[0] : '';
+        if (f(`bkHotel_${i}_nights`)) f(`bkHotel_${i}_nights`).value = h.nights || 0;
+        if (f(`bkHotel_${i}_roomType`)) f(`bkHotel_${i}_roomType`).value = h.roomType || '';
+        if (f(`bkHotel_${i}_breakfast`)) f(`bkHotel_${i}_breakfast`).value = h.breakfastIncluded || 'Yes';
+        if (f(`bkHotel_${i}_adultEM`)) f(`bkHotel_${i}_adultEM`).value = h.adultExtraMattress || 0;
+        if (f(`bkHotel_${i}_childEM`)) f(`bkHotel_${i}_childEM`).value = h.childExtraMattress || 0;
+      });
+    }
+
+    // Itinerary
+    if (b.itinerary && b.itinerary.length) {
+      bkItineraryDays = b.itinerary.map((_, i) => i);
+      renderItineraryFields();
+      b.itinerary.forEach((day, i) => {
+        const f = id => document.getElementById(id);
+        if (f(`bkDay_${i}_date`)) f(`bkDay_${i}_date`).value = day.date ? new Date(day.date).toISOString().split('T')[0] : '';
+        if (f(`bkDay_${i}_activity`)) f(`bkDay_${i}_activity`).value = day.activity || '';
+        if (f(`bkDay_${i}_desc`)) f(`bkDay_${i}_desc`).value = day.activityDescription || '';
+        if (f(`bkDay_${i}_lunch`)) f(`bkDay_${i}_lunch`).value = day.lunchIncluded || 'None';
+        if (f(`bkDay_${i}_dinner`)) f(`bkDay_${i}_dinner`).value = day.dinnerIncluded || 'None';
+      });
+    }
+
+    // Payments
+    if (b.payments && b.payments.length) {
+      bkPaymentRows = b.payments.map((_, i) => i);
+      renderPaymentRows();
+      b.payments.forEach((pay, i) => {
+        const f = id => document.getElementById(id);
+        if (f(`bkPay_${i}_date`)) f(`bkPay_${i}_date`).value = pay.paymentDate ? new Date(pay.paymentDate).toISOString().split('T')[0] : '';
+        if (f(`bkPay_${i}_amount`)) f(`bkPay_${i}_amount`).value = pay.amount || 0;
+        if (f(`bkPay_${i}_method`)) f(`bkPay_${i}_method`).value = pay.paymentMethod || 'UPI';
+        if (f(`bkPay_${i}_bank`)) f(`bkPay_${i}_bank`).value = pay.bank || 'Bee2Bees';
+      });
+    }
+
+    document.getElementById('bkTotalCost').value = b.totalCost || 0;
+    document.getElementById('bkReceived').value = b.received || 0;
+    document.getElementById('bkPending').value = b.pending || 0;
+    document.getElementById('bkRemarks').value = b.remarks || '';
+
+  } catch (e) {
+    showToast('❌ Error loading booking: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+
+async function deleteBooking(id) {
+  if (!confirm('क्या आप इस booking को delete करना चाहते हैं?')) return;
+  try {
+    const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast('✅ Booking deleted', 'success');
+    loadBookings();
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
   }
 }
 </script>
