@@ -10,13 +10,18 @@ function requireAuth(req, res, next) {
 // ─── GET /api/bookings ────────────────────────────────────────────────────────
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
-    const { search, status, queryType, destination, assignedTo } = req.query;
+    const { search, status, queryType, destination, assignedTo, dateFrom, dateTo } = req.query;
     const filter = {};
 
     if (status)      filter.bookingStatus = status;
     if (queryType)   filter.queryType = queryType;
     if (destination) filter.destination = destination;
     if (assignedTo)  filter.assignedTo = assignedTo;
+    if (dateFrom || dateTo) {
+      filter.bookingDate = {};
+      if (dateFrom) filter.bookingDate.$gte = new Date(dateFrom);
+      if (dateTo)   filter.bookingDate.$lte = new Date(dateTo + 'T23:59:59.999Z');
+    }
     if (search) {
       const re = new RegExp(search, 'i');
       filter.$or = [

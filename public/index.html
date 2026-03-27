@@ -1298,6 +1298,7 @@
             <button onclick="closeLeadDetail()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6b7280;">✕</button>
           </div>
           <div class="lead-detail-actions" id="detailActions"></div>
+        <div id="detailBookingBtn" style="display:none; margin-top:8px;"></div>
         </div>
         <div class="lead-detail-body" id="leadDetailBody">
           <div style="text-align:center;padding:30px;color:#9ca3af;">लोड हो रहा है...</div>
@@ -1403,12 +1404,18 @@
           <h1>📋 कन्फर्म्ड बुकिंग्स</h1>
           <p>सभी confirmed bookings देखें और manage करें</p>
         </div>
-        <button class="btn btn-primary" onclick="openBookingForm()">+ नई बुकिंग</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-secondary" onclick="exportBookingsCSV()" title="Export to CSV">📤 Export</button>
+          <label class="btn btn-secondary" style="cursor:pointer;margin:0;" title="Import from CSV">
+            📥 Import <input type="file" id="bkImportFile" accept=".csv" style="display:none;" onchange="importBookingsCSV(this)">
+          </label>
+          <button class="btn btn-primary" onclick="openBookingForm()">+ नई बुकिंग</button>
+        </div>
       </div>
 
       <!-- Filters -->
       <div style="padding:12px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
-        <input type="text" id="bookingSearch" class="conv-search" style="width:220px;" placeholder="🔍 Serial, Agent, Customer..." oninput="loadBookings()">
+        <input type="text" id="bookingSearch" class="conv-search" style="width:200px;" placeholder="🔍 Serial, Agent, Customer..." oninput="loadBookings()">
         <select id="bookingStatusFilter" class="form-control" style="width:140px;" onchange="loadBookings()">
           <option value="">📊 सभी Status</option>
           <option value="Confirmed">✅ Confirmed</option>
@@ -1426,6 +1433,23 @@
           <option value="Himachal">🏔️ Himachal</option>
           <option value="Other">📍 Other</option>
         </select>
+        <select id="bookingAssignedFilter" class="form-control" style="width:130px;" onchange="loadBookings()">
+          <option value="">👤 सभी Staff</option>
+          <option value="Tara">Tara</option>
+          <option value="Sachin">Sachin</option>
+          <option value="Jyoti">Jyoti</option>
+          <option value="Suman">Suman</option>
+          <option value="Gineeta">Gineeta</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <label style="font-size:11px;color:#6b7280;font-weight:600;white-space:nowrap;">From</label>
+          <input type="date" id="bookingDateFrom" class="form-control" style="width:130px;" onchange="loadBookings()">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <label style="font-size:11px;color:#6b7280;font-weight:600;white-space:nowrap;">To</label>
+          <input type="date" id="bookingDateTo" class="form-control" style="width:130px;" onchange="loadBookings()">
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="clearBookingFilters()" title="Clear all filters">✕ Clear</button>
         <span style="margin-left:auto; font-size:12px; color:#6b7280;" id="bookingCount"></span>
       </div>
 
@@ -2752,6 +2776,17 @@ function renderLeadDetail(lead) {
     <button class="btn btn-secondary btn-sm" onclick="openEditLead('${lead._id}')">✏️ Edit</button>
     <button class="btn btn-danger btn-sm" onclick="deleteLead('${lead._id}')">🗑️</button>`;
 
+  // Show "Create Booking" button for booking_confirmed and later stages
+  const confirmStages = ['booking_confirmed','advance_received','voucher_sent','completed'];
+  const bkBtnWrap = document.getElementById('detailBookingBtn');
+  if (confirmStages.includes(lead.stage)) {
+    bkBtnWrap.style.display = '';
+    bkBtnWrap.innerHTML = `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;" onclick="createBookingFromLead(${JSON.stringify(lead)})">📋 Confirmed Booking बनाएं</button>`;
+  } else {
+    bkBtnWrap.style.display = 'none';
+    bkBtnWrap.innerHTML = '';
+  }
+
   // Body
   const fmt = d => d ? new Date(d).toLocaleDateString('hi-IN', { day:'2-digit', month:'short', year:'numeric' }) : '-';
   const stageLabel = KANBAN_COLS.find(c => c.stage === lead.stage)?.label || lead.stage;
@@ -3853,11 +3888,17 @@ async function loadBookings() {
   const status = document.getElementById('bookingStatusFilter')?.value || '';
   const queryType = document.getElementById('bookingTypeFilter')?.value || '';
   const destination = document.getElementById('bookingDestFilter')?.value || '';
+  const assignedTo = document.getElementById('bookingAssignedFilter')?.value || '';
+  const dateFrom = document.getElementById('bookingDateFrom')?.value || '';
+  const dateTo = document.getElementById('bookingDateTo')?.value || '';
   const params = new URLSearchParams();
   if (search) params.set('search', search);
   if (status) params.set('status', status);
   if (queryType) params.set('queryType', queryType);
   if (destination) params.set('destination', destination);
+  if (assignedTo) params.set('assignedTo', assignedTo);
+  if (dateFrom) params.set('dateFrom', dateFrom);
+  if (dateTo) params.set('dateTo', dateTo);
 
   const tbody = document.getElementById('bookingsBody');
   try {
@@ -3902,6 +3943,7 @@ async function loadBookings() {
 
 function openBookingForm(id = null) {
   bkEditId = id;
+  bkRelatedLeadId = null;
   bkItineraryDays = [];
   bkPaymentRows = [];
 
@@ -4185,7 +4227,8 @@ async function saveBooking() {
       totalCost: parseFloat(document.getElementById('bkTotalCost').value) || 0,
       received: parseFloat(document.getElementById('bkReceived').value) || 0,
       payments,
-      remarks: document.getElementById('bkRemarks').value.trim()
+      remarks: document.getElementById('bkRemarks').value.trim(),
+      relatedLead: bkRelatedLeadId || null
     };
 
     const url = bkEditId ? `/api/bookings/${bkEditId}` : '/api/bookings';
@@ -4317,6 +4360,223 @@ async function deleteBooking(id) {
   } catch (e) {
     showToast('❌ Error: ' + e.message, 'error');
   }
+}
+
+function clearBookingFilters() {
+  ['bookingSearch','bookingDateFrom','bookingDateTo'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['bookingStatusFilter','bookingTypeFilter','bookingDestFilter','bookingAssignedFilter'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  loadBookings();
+}
+
+// ── Create Booking from Lead (auto-fill) ────────────────────────────────────
+let bkRelatedLeadId = null;
+
+function createBookingFromLead(lead) {
+  bkRelatedLeadId = lead._id;
+  openBookingForm(); // resets everything first
+
+  // Now fill from lead data
+  document.getElementById('bkQueryType').value = 'B2B';
+  onQueryTypeChange();
+  document.getElementById('bkAgentName').value = lead.agentName || '';
+  document.getElementById('bkAgentNumber').value = lead.agentPhone || '';
+  document.getElementById('bkCustomerName').value = lead.guestName || '';
+  document.getElementById('bkCustomerNumber').value = lead.guestPhone || '';
+
+  // Destination
+  const dest = lead.destination || 'Goa';
+  const knownDests = ['Goa', 'Himachal'];
+  if (knownDests.includes(dest)) {
+    document.getElementById('bkDestination').value = dest;
+  } else if (dest) {
+    document.getElementById('bkDestination').value = 'Other';
+    document.getElementById('bkDestOther').value = dest;
+    document.getElementById('bkDestOtherWrap').style.display = '';
+  }
+
+  // Dates & pax
+  if (lead.checkIn) document.getElementById('bkDate').value = new Date(lead.checkIn).toISOString().split('T')[0];
+  document.getElementById('bkAdults').value = lead.adults || 1;
+  document.getElementById('bkKids').value = lead.kids || 0;
+  renderKidsAges();
+
+  // Hotel
+  if (lead.hotelName) {
+    renderHotelFields(); // ensures hotel fields exist
+    const nameEl = document.getElementById('bkHotel_0_name');
+    if (nameEl) nameEl.value = lead.hotelName;
+    if (lead.checkIn) {
+      const ci = document.getElementById('bkHotel_0_checkIn');
+      if (ci) ci.value = new Date(lead.checkIn).toISOString().split('T')[0];
+    }
+    if (lead.checkOut) {
+      const co = document.getElementById('bkHotel_0_checkOut');
+      if (co) co.value = new Date(lead.checkOut).toISOString().split('T')[0];
+    }
+    if (lead.nights) {
+      const n = document.getElementById('bkHotel_0_nights');
+      if (n) n.value = lead.nights;
+    }
+  }
+
+  // Financials
+  if (lead.quoteAmount) {
+    document.getElementById('bkTotalCost').value = lead.quoteAmount;
+    document.getElementById('bkReceived').value = lead.advanceAmount || 0;
+    calcPending();
+  }
+
+  // Assigned
+  if (lead.assignedTo) document.getElementById('bkAssignedTo').value = lead.assignedTo;
+
+  // Mark title
+  document.getElementById('bookingFormTitle').textContent = '📋 Booking बनाएं (Lead से)';
+
+  // Switch to bookings page after save will refresh it
+  switchPage('bookings');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('data-page') === 'bookings') n.classList.add('active');
+    else n.classList.remove('active');
+  });
+
+  // Reopen modal (switchPage may have closed it)
+  document.getElementById('bookingFormModal').classList.remove('hidden');
+}
+
+// ── Export to CSV ────────────────────────────────────────────────────────────
+async function exportBookingsCSV() {
+  try {
+    const search = document.getElementById('bookingSearch')?.value || '';
+    const status = document.getElementById('bookingStatusFilter')?.value || '';
+    const queryType = document.getElementById('bookingTypeFilter')?.value || '';
+    const destination = document.getElementById('bookingDestFilter')?.value || '';
+    const assignedTo = document.getElementById('bookingAssignedFilter')?.value || '';
+    const dateFrom = document.getElementById('bookingDateFrom')?.value || '';
+    const dateTo = document.getElementById('bookingDateTo')?.value || '';
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (status) params.set('status', status);
+    if (queryType) params.set('queryType', queryType);
+    if (destination) params.set('destination', destination);
+    if (assignedTo) params.set('assignedTo', assignedTo);
+    if (dateFrom) params.set('dateFrom', dateFrom);
+    if (dateTo) params.set('dateTo', dateTo);
+
+    const res = await fetch('/api/bookings?' + params);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    const cols = [
+      'bookingSerial','bookingDate','bookingStatus','queryType','assignedTo',
+      'agentName','agentNumber','customerName','customerNumber',
+      'destination','bookingType','adults','kids','child',
+      'totalCost','received','pending','quoteSerial','remarks'
+    ];
+
+    const csvEsc = v => {
+      if (v === null || v === undefined) return '';
+      const s = String(v).replace(/"/g, '""');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+    };
+
+    const rows = [cols.join(',')];
+    data.data.forEach(b => {
+      rows.push(cols.map(c => {
+        if (c === 'bookingDate' && b[c]) return csvEsc(new Date(b[c]).toLocaleDateString('en-IN'));
+        return csvEsc(b[c]);
+      }).join(','));
+    });
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bookings_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`✅ ${data.data.length} bookings exported`, 'success');
+  } catch (e) {
+    showToast('❌ Export failed: ' + e.message, 'error');
+  }
+}
+
+// ── Import from CSV ──────────────────────────────────────────────────────────
+async function importBookingsCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = ''; // reset so same file can be re-imported
+
+  const text = await file.text();
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) { showToast('❌ Empty CSV', 'error'); return; }
+
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  const parseCSVRow = row => {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i];
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    result.push(cur.trim());
+    return result;
+  };
+
+  const records = lines.slice(1).map(line => {
+    const vals = parseCSVRow(line);
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
+    return obj;
+  }).filter(r => r.bookingSerial || r.agentName || r.customerName);
+
+  if (!records.length) { showToast('❌ No valid rows found', 'error'); return; }
+
+  let success = 0, failed = 0;
+  showToast(`⏳ Importing ${records.length} bookings...`, 'success');
+
+  for (const r of records) {
+    try {
+      const body = {
+        bookingSerial: r.bookingSerial || '',
+        bookingDate: r.bookingDate || null,
+        bookingStatus: ['Confirmed','On Hold','Cancelled'].includes(r.bookingStatus) ? r.bookingStatus : 'Confirmed',
+        queryType: ['B2B','B2C'].includes(r.queryType) ? r.queryType : 'B2B',
+        assignedTo: r.assignedTo || '',
+        agentName: r.agentName || '',
+        agentNumber: r.agentNumber || '',
+        customerName: r.customerName || '',
+        customerNumber: r.customerNumber || '',
+        destination: r.destination || 'Goa',
+        bookingType: r.bookingType || 'Full Package',
+        adults: parseInt(r.adults) || 0,
+        kids: parseInt(r.kids) || 0,
+        child: parseInt(r.child) || 0,
+        totalCost: parseFloat(r.totalCost) || 0,
+        received: parseFloat(r.received) || 0,
+        quoteSerial: r.quoteSerial || '',
+        remarks: r.remarks || '',
+        hotels: [],
+        itinerary: [],
+        payments: []
+      };
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (data.success) success++; else failed++;
+    } catch { failed++; }
+  }
+
+  showToast(`✅ Import done: ${success} saved${failed ? ', ' + failed + ' failed' : ''}`, 'success');
+  loadBookings();
 }
 </script>
 </body>
