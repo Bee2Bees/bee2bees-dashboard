@@ -78,6 +78,23 @@ const bookingSchema = new mongoose.Schema({
   // Payment entries
   payments: { type: [paymentSchema], default: [] },
 
+  // Actual vendor costs (filled after trip)
+  actualCosts: [{
+    vendorId:      { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', default: null },
+    vendorName:    { type: String, default: '' },
+    category:      { type: String, default: '' },
+    description:   { type: String, default: '' },
+    amount:        { type: Number, default: 0 },
+    paymentMethod: { type: String, default: 'UPI' },
+    paidBy:        { type: String, default: '' },
+    paidOn:        { type: Date, default: null }
+  }],
+  costFormToken:       { type: String, default: '' },
+  costFormTokenExpiry: { type: Date, default: null },
+  costFormFilledAt:    { type: Date, default: null },
+  profit:              { type: Number, default: null },
+  margin:              { type: Number, default: null },
+
   // Misc
   remarks:     { type: String, default: '' },
   relatedLead: { type: mongoose.Schema.Types.ObjectId, ref: 'Lead', default: null },

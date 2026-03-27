@@ -838,6 +838,23 @@
     }
 
     /* ─────────────────────────────────────────
+       REPORTS PERIOD BUTTONS
+    ───────────────────────────────────────── */
+    .rpt-period-btn {
+      padding: 6px 14px;
+      border: 1.5px solid #e4e7ec;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #374151;
+      transition: all 0.15s;
+    }
+    .rpt-period-btn:hover { background: #f3f4f6; }
+    .rpt-period-btn.active { background: var(--sidebar-bg); color: #fff; border-color: var(--sidebar-bg); }
+
+    /* ─────────────────────────────────────────
        SETTINGS PAGE
     ───────────────────────────────────────── */
     #settingsPage {
@@ -1168,6 +1185,10 @@
         <span class="icon">📋</span>
         <span>बुकिंग्स <small>(Bookings)</small></span>
       </div>
+      <div class="nav-item" data-page="vendors">
+        <span class="icon">🏪</span>
+        <span>वेंडर्स <small>(Vendors)</small></span>
+      </div>
       <div class="nav-item" data-page="settings">
         <span class="icon">⚙️</span>
         <span>सेटिंग्स <small>(Settings)</small></span>
@@ -1307,18 +1328,27 @@
     </div>
 
     <!-- ── REPORTS PAGE ── -->
-    <div id="reportsPage" class="page">
-      <div class="page-header">
-        <div>
-          <h1>📊 रिपोर्ट (Reports)</h1>
-          <p>बातचीत और लीड्स का सारांश</p>
+    <div id="reportsPage" class="page" style="display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Period filter bar -->
+      <div style="background:#fff;border-bottom:1px solid #e4e7ec;padding:12px 20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <span style="font-size:13px;font-weight:600;color:#374151;">Period:</span>
+        <button class="rpt-period-btn active" data-period="month" onclick="setReportPeriod(this)">Month</button>
+        <button class="rpt-period-btn" data-period="today" onclick="setReportPeriod(this)">Today</button>
+        <button class="rpt-period-btn" data-period="week" onclick="setReportPeriod(this)">Week</button>
+        <button class="rpt-period-btn" data-period="year" onclick="setReportPeriod(this)">Year</button>
+        <button class="rpt-period-btn" data-period="custom" onclick="setReportPeriod(this)">Custom</button>
+        <div id="rptCustomRange" style="display:none;gap:6px;align-items:center;display:none;">
+          <input type="date" id="rptFrom" class="form-control" style="width:130px;" onchange="loadReports()">
+          <span style="color:#6b7280;">to</span>
+          <input type="date" id="rptTo" class="form-control" style="width:130px;" onchange="loadReports()">
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="loadStats()">🔄 रिफ्रेश</button>
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="loadReports()">🔄 Refresh</button>
       </div>
-      <div class="reports-grid" id="statsGrid">
-        <div class="loading-item">लोड हो रहा है... ⏳</div>
+
+      <!-- Scrollable content -->
+      <div style="flex:1;overflow-y:auto;padding:16px 20px;" id="reportsContent">
+        <div style="text-align:center;padding:60px;color:#9ca3af;">लोड हो रहा है... ⏳</div>
       </div>
-      <div class="reports-charts" id="statsCharts" style="display:none;"></div>
     </div>
 
     <!-- ── CAMPAIGNS PAGE ── -->
@@ -1701,7 +1731,24 @@
             </div>
           </div>
 
-          <!-- Section 8: Remarks -->
+          <!-- Section 8: Actual Costs -->
+          <div class="bk-section">
+            <h3 class="bk-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+              📦 Actual Costs (Vendor-wise Spend)
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addActualCostRow()">+ Add Cost</button>
+            </h3>
+            <p style="font-size:12px;color:#9ca3af;margin-bottom:10px;">Fill after trip completion</p>
+            <div id="bkActualCostRows">
+              <p id="bkNoCostRows" style="font-size:12px;color:#9ca3af;padding:4px 0;">Click "+ Add Cost" to add vendor cost entries.</p>
+            </div>
+            <div id="bkCostSummary" style="display:none;margin-top:12px;background:#f9fafb;border-radius:8px;padding:12px;font-size:13px;">
+              <strong>Revenue:</strong> <span id="bkSumRevenue">₹0</span> &nbsp;|&nbsp;
+              <strong>Actual Cost:</strong> <span id="bkSumCost">₹0</span> &nbsp;|&nbsp;
+              <strong>Profit:</strong> <span id="bkSumProfit">₹0</span> (<span id="bkSumMargin">0%</span>)
+            </div>
+          </div>
+
+          <!-- Section 9: Remarks -->
           <div class="bk-section">
             <h3 class="bk-section-title">📝 Remarks & Special Instructions</h3>
             <textarea id="bkRemarks" class="form-control" rows="3" placeholder="Any special instructions, notes, or requests..." style="resize:vertical;"></textarea>
@@ -1853,6 +1900,119 @@
               <tr><td colspan="4" style="text-align:center; padding:40px; color:#9ca3af;">लोड हो रहा है...</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VENDORS PAGE ── -->
+    <div id="vendorsPage" class="page">
+      <div class="page-header">
+        <div>
+          <h1>🏪 वेंडर्स (Vendors)</h1>
+          <p>Vendor master list manage करें</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-primary" onclick="openVendorForm()">+ नया Vendor</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadVendors()">🔄</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:12px 20px;background:#fff;border-bottom:1px solid #e4e7ec;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <input type="text" id="vendorSearch" class="conv-search" style="width:200px;" placeholder="🔍 Search vendor..." oninput="loadVendors()">
+        <select id="vendorCategoryFilter" class="form-control" style="width:160px;" onchange="loadVendors()">
+          <option value="">📁 सभी Categories</option>
+          <option value="hotel">🏨 Hotel</option>
+          <option value="transport">🚗 Transport</option>
+          <option value="activity">🎯 Activity</option>
+          <option value="food">🍽️ Food</option>
+          <option value="misc">📦 Misc</option>
+        </select>
+        <select id="vendorStatusFilter" class="form-control" style="width:140px;" onchange="loadVendors()">
+          <option value="">All Status</option>
+          <option value="true">✅ Active</option>
+          <option value="false">❌ Inactive</option>
+        </select>
+        <span style="margin-left:auto;font-size:12px;color:#6b7280;" id="vendorCount"></span>
+      </div>
+
+      <!-- Table -->
+      <div style="flex:1;overflow-y:auto;padding:16px 20px;">
+        <table id="vendorsTable" style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#f9fafb;text-align:left;position:sticky;top:0;">
+              <th style="padding:10px 12px;border-bottom:1px solid #e4e7ec;">Name</th>
+              <th style="padding:10px 12px;border-bottom:1px solid #e4e7ec;">Category</th>
+              <th style="padding:10px 12px;border-bottom:1px solid #e4e7ec;">Contact</th>
+              <th style="padding:10px 12px;border-bottom:1px solid #e4e7ec;">GSTIN</th>
+              <th style="padding:10px 12px;border-bottom:1px solid #e4e7ec;">Status</th>
+              <th style="padding:10px 12px;border-bottom:1px solid #e4e7ec;"></th>
+            </tr>
+          </thead>
+          <tbody id="vendorsBody">
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">लोड हो रहा है...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── VENDOR FORM MODAL ── -->
+    <div id="vendorFormModal" class="modal-overlay hidden">
+      <div class="modal" style="max-width:500px;width:96%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 id="vendorFormTitle" style="font-size:17px;font-weight:700;">🏪 नया Vendor</h2>
+          <button onclick="closeModal('vendorFormModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">✕</button>
+        </div>
+        <div class="bk-field" style="margin-bottom:12px;">
+          <label>Vendor Name *</label>
+          <input type="text" id="vdrName" class="form-control" placeholder="e.g. Hotel Sunflower">
+        </div>
+        <div class="bk-field" style="margin-bottom:12px;">
+          <label>Category</label>
+          <select id="vdrCategory" class="form-control">
+            <option value="hotel">🏨 Hotel</option>
+            <option value="transport">🚗 Transport</option>
+            <option value="activity">🎯 Activity</option>
+            <option value="food">🍽️ Food</option>
+            <option value="misc">📦 Misc</option>
+          </select>
+        </div>
+        <div class="bk-field" style="margin-bottom:12px;">
+          <label>Contact</label>
+          <input type="text" id="vdrContact" class="form-control" placeholder="Phone / Email">
+        </div>
+        <div class="bk-field" style="margin-bottom:12px;">
+          <label>GSTIN</label>
+          <input type="text" id="vdrGstin" class="form-control" placeholder="GST Number">
+        </div>
+        <div class="bk-field" style="margin-bottom:12px;">
+          <label>Notes</label>
+          <textarea id="vdrNotes" class="form-control" rows="2" placeholder="Any notes..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+          <button class="btn btn-secondary" onclick="closeModal('vendorFormModal')">रद्द करें</button>
+          <button class="btn btn-primary" onclick="saveVendor()">💾 Save Vendor</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COST FORM LINK MODAL ── -->
+    <div id="costFormLinkModal" class="modal-overlay hidden">
+      <div class="modal" style="max-width:520px;width:96%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h2 style="font-size:17px;font-weight:700;">📤 Cost Form Link</h2>
+          <button onclick="closeModal('costFormLinkModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">✕</button>
+        </div>
+        <p style="font-size:12px;color:#6b7280;margin-bottom:12px;">Bot will auto-send this on checkout day. Use this for manual trigger.</p>
+        <label style="font-size:12px;font-weight:600;color:#374151;">Form Link</label>
+        <div style="display:flex;gap:8px;margin-top:4px;margin-bottom:14px;">
+          <input type="text" id="cfLinkInput" class="form-control" readonly style="font-size:12px;">
+          <button class="btn btn-secondary btn-sm" onclick="copyText('cfLinkInput')">📋 Copy</button>
+        </div>
+        <label style="font-size:12px;font-weight:600;color:#374151;">WhatsApp Message</label>
+        <div style="margin-top:4px;margin-bottom:14px;">
+          <textarea id="cfMsgInput" class="form-control" rows="6" readonly style="font-size:12px;resize:none;"></textarea>
+          <button class="btn btn-secondary btn-sm" style="margin-top:6px;" onclick="copyText('cfMsgInput')">📋 Copy Message</button>
         </div>
       </div>
     </div>
@@ -2260,10 +2420,11 @@ function switchPage(page) {
   document.getElementById(page + 'Page').classList.add('active');
 
   if (page === 'leads') { loadLeads(); loadLeadStats(); }
-  if (page === 'reports') loadStats();
+  if (page === 'reports') loadReports();
   if (page === 'campaigns') { loadContacts(); loadCampaigns(); }
   if (page === 'pricing') { loadPricingStatus(); loadHotels(); }
   if (page === 'bookings') loadBookings();
+  if (page === 'vendors') loadVendors();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -3114,6 +3275,375 @@ function renderCharts(s) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// REPORTS (new analytics dashboard)
+// ═══════════════════════════════════════════════════════════
+let reportPeriod = 'month';
+
+function setReportPeriod(btn) {
+  document.querySelectorAll('.rpt-period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  reportPeriod = btn.getAttribute('data-period');
+  const customRange = document.getElementById('rptCustomRange');
+  if (customRange) customRange.style.display = reportPeriod === 'custom' ? 'flex' : 'none';
+  if (reportPeriod !== 'custom') loadReports();
+}
+
+async function loadReports() {
+  const content = document.getElementById('reportsContent');
+  if (!content) return;
+  content.innerHTML = '<div style="text-align:center;padding:60px;color:#9ca3af;">लोड हो रहा है... ⏳</div>';
+
+  try {
+    const params = new URLSearchParams({ period: reportPeriod });
+    if (reportPeriod === 'custom') {
+      const f = document.getElementById('rptFrom')?.value;
+      const t = document.getElementById('rptTo')?.value;
+      if (f) params.set('dateFrom', f);
+      if (t) params.set('dateTo', t);
+    }
+    const res = await fetch('/api/reports/overview?' + params);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    const { leads, bookings, topAgents, staffPerformance, vendors } = data;
+    const fmtMoney = n => '₹' + (n || 0).toLocaleString('en-IN');
+    const stagePills = [
+      { key: 'new_query', label: 'New Query', color: '#e0f2fe', tc: '#0369a1' },
+      { key: 'quote_sent', label: 'Quoted', color: '#fef9c3', tc: '#854d0e' },
+      { key: 'changes_requested', label: 'Changes', color: '#fce7f3', tc: '#9d174d' },
+      { key: 'follow_up', label: 'Follow Up', color: '#ede9fe', tc: '#6d28d9' },
+      { key: 'booking_confirmed', label: 'Confirmed', color: '#d1fae5', tc: '#065f46' },
+      { key: 'advance_received', label: 'Advance Rcvd', color: '#dcfce7', tc: '#166534' },
+      { key: 'voucher_sent', label: 'Voucher Sent', color: '#e0f2fe', tc: '#075985' },
+      { key: 'completed', label: 'Completed', color: '#f0fdf4', tc: '#15803d' },
+      { key: 'lost', label: 'Lost', color: '#fee2e2', tc: '#991b1b' }
+    ];
+
+    content.innerHTML = `
+    <!-- Leads Card -->
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h3 style="font-size:15px;font-weight:700;">👥 Leads / Queries</h3>
+        <span style="font-size:22px;font-weight:800;color:#1a1a2e;">${leads.total}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${stagePills.map(p => `<div style="background:${p.color};color:${p.tc};padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;">${p.label}: ${leads[p.key] || 0}</div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Bookings Card -->
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">📋 Bookings</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;">
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;">${bookings.total}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Total</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#16a34a;">${bookings.confirmed}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Confirmed</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#d97706;">${bookings.onHold}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">On Hold</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#dc2626;">${bookings.cancelled}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Cancelled</div></div>
+      </div>
+    </div>
+
+    <!-- Revenue & Profit Card -->
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">💰 Revenue & Profit</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:10px;">
+        <div style="text-align:center;background:#f0fdf4;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#16a34a;">${fmtMoney(bookings.revenue)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Revenue</div></div>
+        <div style="text-align:center;background:#eff6ff;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#1d4ed8;">${fmtMoney(bookings.received)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Received</div></div>
+        <div style="text-align:center;background:#fff7ed;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#ea580c;">${fmtMoney(bookings.pending)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Pending</div></div>
+        <div style="text-align:center;background:#fef9c3;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#854d0e;">${fmtMoney(bookings.totalCost)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Actual Cost</div></div>
+        <div style="text-align:center;background:${bookings.profit>=0?'#f0fdf4':'#fee2e2'};border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:${bookings.profit>=0?'#16a34a':'#dc2626'};">${fmtMoney(bookings.profit)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Profit</div></div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:#6b7280;">Margin: <strong style="color:${bookings.margin>=0?'#16a34a':'#dc2626'}">${bookings.margin}%</strong></div>
+    </div>
+
+    <!-- Top Agents -->
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">🏆 Top Agents (B2B)</h3>
+      ${topAgents.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No data for selected period.</p>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#f9fafb;">
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">#</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Agent</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Queries</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Bookings</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Revenue</th>
+        </tr></thead>
+        <tbody>${topAgents.map((a,i) => `<tr style="border-bottom:1px solid #f3f4f6;">
+          <td style="padding:8px 12px;color:#9ca3af;font-weight:700;">${i+1}</td>
+          <td style="padding:8px 12px;"><div style="font-weight:600;">${esc(a.name||a.phone)}</div><div style="font-size:11px;color:#9ca3af;">${esc(a.phone)}</div></td>
+          <td style="padding:8px 12px;text-align:right;">${a.leads}</td>
+          <td style="padding:8px 12px;text-align:right;">${a.bookings}</td>
+          <td style="padding:8px 12px;text-align:right;font-weight:700;">${fmtMoney(a.revenue)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`}
+    </div>
+
+    <!-- Staff Performance -->
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">👤 In-House Staff Performance</h3>
+      ${staffPerformance.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No data for selected period.</p>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#f9fafb;">
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Staff</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Leads</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Bookings</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Revenue</th>
+        </tr></thead>
+        <tbody>${staffPerformance.map(s => `<tr style="border-bottom:1px solid #f3f4f6;">
+          <td style="padding:8px 12px;font-weight:600;">${esc(s.name)}</td>
+          <td style="padding:8px 12px;text-align:right;">${s.leads}</td>
+          <td style="padding:8px 12px;text-align:right;">${s.bookings}</td>
+          <td style="padding:8px 12px;text-align:right;font-weight:700;">${fmtMoney(s.revenue)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`}
+    </div>
+
+    <!-- Vendor Spend -->
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">🏪 Vendor Spend</h3>
+      ${vendors.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No vendor cost data for selected period.</p>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#f9fafb;">
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Vendor</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Category</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Total Paid</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Bookings</th>
+        </tr></thead>
+        <tbody>${vendors.map(v => `<tr style="border-bottom:1px solid #f3f4f6;">
+          <td style="padding:8px 12px;font-weight:600;">${esc(v.name)}</td>
+          <td style="padding:8px 12px;color:#6b7280;">${esc(v.category)}</td>
+          <td style="padding:8px 12px;text-align:right;font-weight:700;">${fmtMoney(v.totalAmount)}</td>
+          <td style="padding:8px 12px;text-align:right;">${v.bookingCount}</td>
+        </tr>`).join('')}</tbody>
+      </table>`}
+    </div>`;
+  } catch (e) {
+    content.innerHTML = '<div style="text-align:center;padding:60px;color:#ef4444;">Reports लोड नहीं हो सकी ⚠️<br><small>' + e.message + '</small></div>';
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// VENDORS
+// ═══════════════════════════════════════════════════════════
+let vdrEditId = null;
+
+async function loadVendors() {
+  const search = document.getElementById('vendorSearch')?.value || '';
+  const category = document.getElementById('vendorCategoryFilter')?.value || '';
+  const isActive = document.getElementById('vendorStatusFilter')?.value || '';
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (category) params.set('category', category);
+  if (isActive !== '') params.set('isActive', isActive);
+
+  const tbody = document.getElementById('vendorsBody');
+  try {
+    const res = await fetch('/api/vendors?' + params);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    document.getElementById('vendorCount').textContent = `${data.count} vendors`;
+    const catEmoji = { hotel:'🏨', transport:'🚗', activity:'🎯', food:'🍽️', misc:'📦' };
+    tbody.innerHTML = data.data.map(v => `<tr style="border-bottom:1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+      <td style="padding:10px 12px;font-weight:600;">${esc(v.name)}</td>
+      <td style="padding:10px 12px;">${catEmoji[v.category]||''} ${esc(v.category)}</td>
+      <td style="padding:10px 12px;color:#6b7280;">${esc(v.contact)}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">${esc(v.gstin)}</td>
+      <td style="padding:10px 12px;"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${v.isActive?'#d1fae5':'#fee2e2'};color:${v.isActive?'#065f46':'#991b1b'};">${v.isActive?'Active':'Inactive'}</span></td>
+      <td style="padding:10px 12px;">
+        <button class="btn btn-secondary btn-sm" onclick="editVendor('${v._id}')">✏️</button>
+        <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-left:4px;" onclick="deleteVendor('${v._id}')">🗑️</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">कोई vendor नहीं मिला।</td></tr>';
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#ef4444;">Error loading vendors ⚠️</td></tr>';
+  }
+}
+
+function openVendorForm(vendor = null) {
+  vdrEditId = vendor ? vendor._id : null;
+  document.getElementById('vendorFormTitle').textContent = vendor ? '✏️ Vendor Edit करें' : '🏪 नया Vendor';
+  document.getElementById('vdrName').value = vendor ? vendor.name : '';
+  document.getElementById('vdrCategory').value = vendor ? vendor.category : 'hotel';
+  document.getElementById('vdrContact').value = vendor ? vendor.contact : '';
+  document.getElementById('vdrGstin').value = vendor ? vendor.gstin : '';
+  document.getElementById('vdrNotes').value = vendor ? vendor.notes : '';
+  document.getElementById('vendorFormModal').classList.remove('hidden');
+}
+
+async function editVendor(id) {
+  try {
+    const res = await fetch('/api/vendors/' + id);
+    const data = await res.json();
+    if (data.success) openVendorForm(data.data);
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+async function saveVendor() {
+  const name = document.getElementById('vdrName').value.trim();
+  if (!name) { showToast('Vendor name जरूरी है', 'error'); return; }
+  const body = {
+    name,
+    category: document.getElementById('vdrCategory').value,
+    contact: document.getElementById('vdrContact').value.trim(),
+    gstin: document.getElementById('vdrGstin').value.trim(),
+    notes: document.getElementById('vdrNotes').value.trim()
+  };
+  try {
+    const url = vdrEditId ? `/api/vendors/${vdrEditId}` : '/api/vendors';
+    const method = vdrEditId ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast(vdrEditId ? '✅ Vendor updated' : '✅ Vendor created', 'success');
+    closeModal('vendorFormModal');
+    loadVendors();
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+async function deleteVendor(id) {
+  if (!confirm('क्या आप इस vendor को delete करना चाहते हैं?')) return;
+  try {
+    const res = await fetch(`/api/vendors/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast('✅ Vendor deactivated', 'success');
+    loadVendors();
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACTUAL COSTS (Booking form)
+// ═══════════════════════════════════════════════════════════
+let bkActualCostRows = [];
+
+function addActualCostRow(data) {
+  const i = bkActualCostRows.length;
+  bkActualCostRows.push(i);
+  const today = new Date().toISOString().split('T')[0];
+  const container = document.getElementById('bkActualCostRows');
+  const noRows = document.getElementById('bkNoCostRows');
+  if (noRows) noRows.style.display = 'none';
+
+  const row = document.createElement('div');
+  row.id = 'bkCostRow_' + i;
+  row.style.cssText = 'background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid #e4e7ec;';
+  row.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <span style="font-size:12px;font-weight:600;color:#6b7280;">Cost Entry #${i+1}</span>
+    <button type="button" onclick="removeActualCostRow(${i})" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">✕</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Vendor Name</label>
+    <input type="text" id="bkCv_${i}_vn" class="form-control" placeholder="Vendor name" value="${esc(data?.vendorName||'')}"></div>
+    <div><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Category</label>
+    <select id="bkCv_${i}_vc" class="form-control">
+      <option value="hotel"${data?.category==='hotel'?' selected':''}>Hotel</option>
+      <option value="transport"${data?.category==='transport'?' selected':''}>Transport</option>
+      <option value="activity"${data?.category==='activity'?' selected':''}>Activity</option>
+      <option value="food"${data?.category==='food'?' selected':''}>Food</option>
+      <option value="misc"${(!data?.category||data?.category==='misc')?' selected':''}>Misc</option>
+    </select></div>
+  </div>
+  <div style="margin-bottom:8px;"><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Description</label>
+  <input type="text" id="bkCv_${i}_vd" class="form-control" placeholder="e.g. 3N standard room" value="${esc(data?.description||'')}"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
+    <div><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Amount (₹)</label>
+    <input type="number" id="bkCv_${i}_va" class="form-control" placeholder="0" value="${data?.amount||''}" oninput="updateBkCostSummary()"></div>
+    <div><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Method</label>
+    <select id="bkCv_${i}_vm" class="form-control">
+      <option value="UPI"${data?.paymentMethod==='UPI'?' selected':''}>UPI</option>
+      <option value="Cash"${data?.paymentMethod==='Cash'?' selected':''}>Cash</option>
+      <option value="Bank Transfer"${data?.paymentMethod==='Bank Transfer'?' selected':''}>Bank Transfer</option>
+      <option value="Credit Card"${data?.paymentMethod==='Credit Card'?' selected':''}>Credit Card</option>
+    </select></div>
+    <div><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Paid By</label>
+    <select id="bkCv_${i}_vb" class="form-control">
+      <option value="Tara"${data?.paidBy==='Tara'?' selected':''}>Tara</option>
+      <option value="Sachin"${data?.paidBy==='Sachin'?' selected':''}>Sachin</option>
+      <option value="Jyoti"${data?.paidBy==='Jyoti'?' selected':''}>Jyoti</option>
+      <option value="Suman"${data?.paidBy==='Suman'?' selected':''}>Suman</option>
+      <option value="Gineeta"${data?.paidBy==='Gineeta'?' selected':''}>Gineeta</option>
+      <option value="Bee2Bees Account"${data?.paidBy==='Bee2Bees Account'?' selected':''}>Bee2Bees</option>
+    </select></div>
+    <div><label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Date Paid</label>
+    <input type="date" id="bkCv_${i}_vp" class="form-control" value="${data?.paidOn?new Date(data.paidOn).toISOString().split('T')[0]:today}"></div>
+  </div>`;
+  container.appendChild(row);
+  updateBkCostSummary();
+}
+
+function removeActualCostRow(i) {
+  const el = document.getElementById('bkCostRow_' + i);
+  if (el) el.remove();
+  updateBkCostSummary();
+  const container = document.getElementById('bkActualCostRows');
+  if (!container.querySelector('[id^="bkCostRow_"]')) {
+    const noRows = document.getElementById('bkNoCostRows');
+    if (noRows) noRows.style.display = '';
+  }
+}
+
+function updateBkCostSummary() {
+  let total = 0;
+  document.querySelectorAll('[id^="bkCv_"][id$="_va"]').forEach(el => {
+    total += parseFloat(el.value) || 0;
+  });
+  const revenue = parseFloat(document.getElementById('bkTotalCost')?.value) || 0;
+  const profit = revenue - total;
+  const margin = revenue > 0 ? Math.round((profit / revenue) * 1000) / 10 : 0;
+  const summary = document.getElementById('bkCostSummary');
+  if (summary) {
+    summary.style.display = total > 0 || document.querySelector('[id^="bkCostRow_"]') ? 'block' : 'none';
+    const rev = document.getElementById('bkSumRevenue');
+    const cost = document.getElementById('bkSumCost');
+    const prof = document.getElementById('bkSumProfit');
+    const marg = document.getElementById('bkSumMargin');
+    if (rev) rev.textContent = '₹' + revenue.toLocaleString('en-IN');
+    if (cost) cost.textContent = '₹' + total.toLocaleString('en-IN');
+    if (prof) { prof.textContent = '₹' + profit.toLocaleString('en-IN'); prof.style.color = profit >= 0 ? '#16a34a' : '#dc2626'; }
+    if (marg) { marg.textContent = margin + '%'; marg.style.color = margin >= 0 ? '#16a34a' : '#dc2626'; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEND COST FORM from Dashboard
+// ═══════════════════════════════════════════════════════════
+async function sendCostFormFromDashboard(id) {
+  try {
+    const res = await fetch(`/api/bookings/${id}/send-cost-form`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showCostFormLinkModal(data.link, data.message);
+    } else {
+      showToast('❌ Error: ' + (data.error || 'Failed'), 'error');
+    }
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+function showCostFormLinkModal(link, message) {
+  document.getElementById('cfLinkInput').value = link || '';
+  document.getElementById('cfMsgInput').value = message || '';
+  document.getElementById('costFormLinkModal').classList.remove('hidden');
+}
+
+function copyText(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.select();
+  navigator.clipboard.writeText(el.value).then(() => showToast('✅ Copied!', 'success')).catch(() => {
+    document.execCommand('copy');
+    showToast('✅ Copied!', 'success');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 // POLLING
 // ═══════════════════════════════════════════════════════════
 function startPolling() {
@@ -3892,6 +4422,7 @@ async function syncPricingSheets() {
 let bkEditId = null;
 let bkItineraryDays = [];
 let bkPaymentRows = [];
+let bkActualCostRowsInForm = [];
 
 async function loadBookings() {
   const search = document.getElementById('bookingSearch')?.value || '';
@@ -3942,6 +4473,7 @@ async function loadBookings() {
         <td style="padding:10px 12px;">
           <button class="btn btn-secondary btn-sm" onclick="editBooking('${b._id}')">✏️</button>
           <button class="btn btn-sm" style="background:#dbeafe;color:#1d4ed8;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-left:4px;" onclick="generateBookingPDF('${b._id}')" title="PDF बनाएं">📄 PDF</button>
+          <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-left:4px;" onclick="sendCostFormFromDashboard('${b._id}')" title="Send Cost Form">📤</button>
           <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-left:4px;" onclick="deleteBooking('${b._id}')">🗑️</button>
         </td>
       </tr>`;
@@ -3957,6 +4489,7 @@ function openBookingForm(id = null) {
   bkRelatedLeadId = null;
   bkItineraryDays = [];
   bkPaymentRows = [];
+  bkActualCostRows = [];
 
   // Reset form
   document.getElementById('bookingFormTitle').textContent = id ? '✏️ बुकिंग Edit करें' : '📋 नई बुकिंग';
@@ -3994,6 +4527,13 @@ function openBookingForm(id = null) {
   document.getElementById('bkRemarks').value = '';
   document.getElementById('bkPaymentRows').innerHTML = '<p style="font-size:12px;color:#9ca3af;padding:4px 0;">Click "+ Add Payment" to add payment entries.</p>';
   document.getElementById('bkItineraryFields').innerHTML = '<p style="font-size:12px;color:#9ca3af;padding:8px 0;">Click "+ Add Day" to add itinerary days.</p>';
+  // Reset actual costs
+  const costContainer = document.getElementById('bkActualCostRows');
+  if (costContainer) {
+    costContainer.innerHTML = '<p id="bkNoCostRows" style="font-size:12px;color:#9ca3af;padding:4px 0;">Click "+ Add Cost" to add vendor cost entries.</p>';
+  }
+  const costSummary = document.getElementById('bkCostSummary');
+  if (costSummary) costSummary.style.display = 'none';
 
   onQueryTypeChange();
   onBookingTypeChange();
@@ -4212,6 +4752,22 @@ async function saveBooking() {
       if (age) kidsAges.push(age);
     }
 
+    // Collect actual cost rows
+    const actualCosts = [];
+    document.querySelectorAll('[id^="bkCostRow_"]').forEach(row => {
+      const i = row.id.replace('bkCostRow_', '');
+      const amount = parseFloat(document.getElementById(`bkCv_${i}_va`)?.value) || 0;
+      actualCosts.push({
+        vendorName: document.getElementById(`bkCv_${i}_vn`)?.value || '',
+        category: document.getElementById(`bkCv_${i}_vc`)?.value || 'misc',
+        description: document.getElementById(`bkCv_${i}_vd`)?.value || '',
+        amount,
+        paymentMethod: document.getElementById(`bkCv_${i}_vm`)?.value || 'UPI',
+        paidBy: document.getElementById(`bkCv_${i}_vb`)?.value || '',
+        paidOn: document.getElementById(`bkCv_${i}_vp`)?.value || null
+      });
+    });
+
     const body = {
       queryType: qType,
       bookingSerial: document.getElementById('bkSerial').value.trim(),
@@ -4242,6 +4798,7 @@ async function saveBooking() {
       totalCost: parseFloat(document.getElementById('bkTotalCost').value) || 0,
       received: parseFloat(document.getElementById('bkReceived').value) || 0,
       payments,
+      actualCosts,
       remarks: document.getElementById('bkRemarks').value.trim(),
       relatedLead: bkRelatedLeadId || null
     };
@@ -4360,6 +4917,11 @@ async function editBooking(id) {
     document.getElementById('bkReceived').value = b.received || 0;
     document.getElementById('bkPending').value = b.pending || 0;
     document.getElementById('bkRemarks').value = b.remarks || '';
+
+    // Actual costs
+    if (b.actualCosts && b.actualCosts.length) {
+      b.actualCosts.forEach(cost => addActualCostRow(cost));
+    }
 
   } catch (e) {
     showToast('❌ Error loading booking: ' + e.message, 'error');
