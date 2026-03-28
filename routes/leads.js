@@ -14,32 +14,40 @@ async function autoCreateBooking(lead) {
     const count = await Booking.countDocuments();
     const bookingSerial = `${dest}_${String(count + 1).padStart(3, '0')}`;
 
-    const totalCost = lead.quoteAmount || 0;
+    const totalCost = lead.quoteAmount  || 0;
     const received  = lead.advanceAmount || 0;
+
+    // Map mealPlan → breakfastIncluded (EP = no breakfast, everything else = yes)
+    const noBreakfastPlans = ['EP', 'ep'];
+    const breakfastIncluded = noBreakfastPlans.includes((lead.mealPlan || '').trim()) ? 'No' : 'Yes';
 
     await Booking.create({
       bookingSerial,
-      bookingDate:   new Date(),
-      bookingStatus: 'Confirmed',
-      queryType:     'B2B',
-      agentName:     lead.agentName   || '',
-      agentNumber:   lead.agentPhone  || '',
-      customerName:  lead.guestName   || '',
-      customerNumber:lead.guestPhone  || '',
-      destination:   lead.destination || 'Goa',
-      adults:        lead.adults      || 1,
-      kids:          lead.kids        || 0,
-      rooms:         lead.rooms       || 1,
+      bookingDate:    new Date(),
+      bookingStatus:  'Confirmed',
+      queryType:      'B2B',
+      agentName:      lead.agentName    || '',
+      agentNumber:    lead.agentPhone   || '',
+      customerName:   lead.guestName    || '',
+      customerNumber: lead.guestPhone   || '',
+      destination:    lead.destination  || 'Goa',
+      assignedTo:     lead.assignedTo   || '',
+      adults:         lead.adults       || 1,
+      kids:           lead.kids         || 0,
+      rooms:          lead.rooms        || 1,
       hotels: [{
-        checkIn:  lead.checkIn  || null,
-        checkOut: lead.checkOut || null,
-        nights:   lead.nights   || 0
+        hotelName:         lead.hotelName || '',
+        checkIn:           lead.checkIn   || null,
+        checkOut:          lead.checkOut  || null,
+        nights:            lead.nights    || 0,
+        breakfastIncluded: breakfastIncluded
       }],
       totalCost,
       received,
-      pending:    totalCost - received,
+      pending:     totalCost - received,
       quoteSerial: lead.quoteSerial || '',
-      relatedLead: lead._id
+      relatedLead: lead._id,
+      remarks:     lead.mealPlan ? `Meal Plan: ${lead.mealPlan}` : ''
     });
   } catch (err) {
     console.error('autoCreateBooking error:', err.message);
