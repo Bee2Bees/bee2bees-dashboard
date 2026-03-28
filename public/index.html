@@ -677,7 +677,9 @@
     }
     .lead-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
     .lead-card.dragging { opacity: 0.4; cursor: grabbing; }
-    .lead-card-name { font-size: 12px; font-weight: 700; margin-bottom: 1px; }
+    .lead-card-serial { font-size: 11px; font-weight: 800; color: #0f3460; background: #e0e7ff; border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: 4px; letter-spacing: 0.5px; }
+    .lead-card-customer { font-size: 11px; font-weight: 600; color: #1a1a2e; margin-bottom: 3px; }
+    .lead-card-name { font-size: 11px; color: #6b7280; margin-bottom: 1px; }
     .lead-card-company { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
     .lead-card-dest {
       font-size: 11px; color: #374151;
@@ -1313,6 +1315,7 @@
         <div class="lead-detail-header">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <div>
+              <div id="detailQuoteSerial" style="font-size:12px;font-weight:800;color:#0f3460;background:#e0e7ff;border-radius:5px;padding:2px 8px;display:inline-block;margin-bottom:4px;letter-spacing:0.5px;"></div>
               <h3 id="detailAgentName">Agent</h3>
               <p id="detailAgentSub">Company · Phone</p>
             </div>
@@ -2170,6 +2173,16 @@ Body (JSON):
           <input type="text" class="form-control" id="leadAssigned" placeholder="Team member">
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quote Serial (auto)</label>
+          <input type="text" class="form-control" id="leadQuoteSerial" placeholder="e.g. GOA_001" style="font-weight:700;color:#0f3460;">
+        </div>
+        <div class="form-group">
+          <label>Guest Phone</label>
+          <input type="text" class="form-control" id="leadGuestPhone" placeholder="Customer phone">
+        </div>
+      </div>
       <div class="form-group">
         <label>Note (optional)</label>
         <textarea class="form-control" id="leadNotes" placeholder="कोई जरूरी जानकारी..." rows="2"></textarea>
@@ -2858,14 +2871,16 @@ function renderLeadCard(lead) {
       ondragstart="onDragStart(event, '${lead._id}')"
       ondragend="onDragEnd(event)"
       onclick="openLeadDetail('${lead._id}')">
-      <div class="lead-card-name">${esc(lead.agentName || 'Unknown')}</div>
-      <div class="lead-card-company">${esc(lead.agentCompany || lead.agentPhone)}</div>
+      ${lead.quoteSerial ? `<div class="lead-card-serial">${esc(lead.quoteSerial)}</div>` : ''}
+      ${lead.guestName ? `<div class="lead-card-customer">👤 ${esc(lead.guestName)}</div>` : ''}
+      <div class="lead-card-name">${esc(lead.agentName || 'Unknown Agent')}</div>
+      <div class="lead-card-company">${esc(lead.agentPhone)}</div>
       ${pax ? `<div class="lead-card-dest">✈️ ${esc(pax)}</div>` : ''}
       <div class="lead-card-row">
         <span class="lead-card-amount">${amount}</span>
         <span class="lead-card-age ${ageClass}">${ageDays}</span>
       </div>
-      ${lead.assignedTo ? `<div class="lead-card-assigned">👤 ${esc(lead.assignedTo)}</div>` : ''}
+      ${lead.assignedTo ? `<div class="lead-card-assigned">🧑‍💼 ${esc(lead.assignedTo)}</div>` : ''}
     </div>`;
 }
 
@@ -2934,6 +2949,13 @@ async function openLeadDetail(id) {
 
 function renderLeadDetail(lead) {
   // Header
+  const serialEl = document.getElementById('detailQuoteSerial');
+  if (lead.quoteSerial) {
+    serialEl.textContent = lead.quoteSerial;
+    serialEl.style.display = 'inline-block';
+  } else {
+    serialEl.style.display = 'none';
+  }
   document.getElementById('detailAgentName').textContent =
     lead.agentName || 'Unknown Agent';
   document.getElementById('detailAgentSub').textContent =
@@ -2982,9 +3004,16 @@ function renderLeadDetail(lead) {
     </div>
 
     <div class="detail-section">
-      <h4>👤 Guest Info</h4>
-      <div class="detail-row"><span>Guest Name</span><span>${esc(lead.guestName || '-')}</span></div>
-      <div class="detail-row"><span>Guest Phone</span><span>${esc(lead.guestPhone || '-')}</span></div>
+      <h4>🧑‍💼 Agent (जिसने Lead भेजी)</h4>
+      <div class="detail-row"><span>Name</span><span>${esc(lead.agentName || '-')}</span></div>
+      <div class="detail-row"><span>Phone</span><span>${esc(lead.agentPhone || '-')}</span></div>
+      <div class="detail-row"><span>Company</span><span>${esc(lead.agentCompany || '-')}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>👤 Customer (जिसके लिए Trip है)</h4>
+      <div class="detail-row"><span>Name</span><span>${esc(lead.guestName || '-')}</span></div>
+      <div class="detail-row"><span>Phone</span><span>${esc(lead.guestPhone || '-')}</span></div>
     </div>
 
     <div class="detail-section">
@@ -3073,7 +3102,7 @@ function closeLeadDetail() {
 function openNewLeadModal() {
   document.getElementById('leadModalTitle').textContent = 'नई लीड बनाएं';
   document.getElementById('leadModalId').value = '';
-  ['leadPhone','leadName','leadCompany','leadDest','leadAssigned','leadNotes','leadGuestName'].forEach(id => {
+  ['leadPhone','leadName','leadCompany','leadDest','leadAssigned','leadNotes','leadGuestName','leadGuestPhone','leadQuoteSerial'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -3105,6 +3134,8 @@ async function openEditLead(id) {
     document.getElementById('leadRooms').value = lead.rooms || '';
     document.getElementById('leadQuote').value = lead.quoteAmount || '';
     document.getElementById('leadGuestName').value = lead.guestName || '';
+    document.getElementById('leadGuestPhone').value = lead.guestPhone || '';
+    document.getElementById('leadQuoteSerial').value = lead.quoteSerial || '';
     document.getElementById('leadStage').value = lead.stage || 'new_query';
     document.getElementById('leadAssigned').value = lead.assignedTo || '';
     document.getElementById('leadNotes').value = '';
@@ -3132,6 +3163,8 @@ async function saveLead() {
     rooms: parseInt(document.getElementById('leadRooms').value) || 0,
     quoteAmount: parseFloat(document.getElementById('leadQuote').value) || 0,
     guestName: document.getElementById('leadGuestName').value.trim(),
+    guestPhone: document.getElementById('leadGuestPhone').value.trim(),
+    quoteSerial: document.getElementById('leadQuoteSerial').value.trim() || undefined,
     stage: document.getElementById('leadStage').value,
     assignedTo: document.getElementById('leadAssigned').value.trim(),
     notes: document.getElementById('leadNotes').value.trim()

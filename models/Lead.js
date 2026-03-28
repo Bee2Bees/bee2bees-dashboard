@@ -13,6 +13,8 @@ const queryHistorySchema = new mongoose.Schema({
 }, { _id: true });
 
 const leadSchema = new mongoose.Schema({
+  quoteSerial: { type: String, default: '', index: true },
+
   agentPhone: { type: String, required: true, index: true },
   agentName: { type: String, default: '' },
   agentCompany: { type: String, default: '' },

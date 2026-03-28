@@ -12,6 +12,14 @@ function requireAuth(req, res, next) {
   res.status(401).json({ error: 'Authentication required' });
 }
 
+async function generateQuoteSerial(destination) {
+  const prefix = (destination || 'LEAD')
+    .trim().slice(0, 4).toUpperCase().replace(/[^A-Z]/g, 'X');
+  const count = await Lead.countDocuments();
+  const num = String(count + 1).padStart(3, '0');
+  return `${prefix}_${num}`;
+}
+
 // ── GET /api/leads — grouped by stage for kanban ──────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -120,12 +128,18 @@ router.post('/', requireAuth, async (req, res) => {
     const {
       agentPhone, agentName, agentCompany, destination, checkIn, checkOut,
       nights, adults, kids, rooms, mealPlan, quoteAmount, advanceAmount,
-      guestName, guestPhone, hotelName, assignedTo, stage, source, notes
+      guestName, guestPhone, hotelName, assignedTo, stage, source, notes,
+      quoteSerial: customSerial
     } = req.body;
 
     if (!agentPhone) return res.status(400).json({ error: 'Agent phone is required' });
 
+    const quoteSerial = customSerial && customSerial.trim()
+      ? customSerial.trim()
+      : await generateQuoteSerial(destination);
+
     const lead = await Lead.create({
+      quoteSerial,
       agentPhone, agentName: agentName || '', agentCompany: agentCompany || '',
       destination: destination || '',
       checkIn: checkIn || null, checkOut: checkOut || null,
@@ -182,7 +196,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       'stage', 'assignedTo', 'destination', 'checkIn', 'checkOut', 'nights',
       'adults', 'kids', 'rooms', 'mealPlan', 'quoteAmount', 'advanceAmount',
       'guestName', 'guestPhone', 'hotelName', 'agentName', 'agentCompany',
-      'followUpCount', 'lastFollowUpAt'
+      'followUpCount', 'lastFollowUpAt', 'quoteSerial'
     ];
     const updateFields = { lastActivityAt: new Date() };
     allowed.forEach(key => {

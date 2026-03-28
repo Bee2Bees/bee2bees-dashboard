@@ -171,12 +171,33 @@ app.post('/api/webhook/message', async (req, res) => {
       isRead: direction === 'outgoing'
     });
 
-    // Touch Lead.lastActivityAt so the 24-hour follow-up cron works correctly
-    Lead.findOneAndUpdate(
-      { agentPhone, stage: { $in: ['new_query', 'quote_sent', 'changes_requested', 'follow_up'] } },
-      { lastActivityAt: new Date() },
-      { sort: { createdAt: -1 } }
-    ).catch(() => {});
+    // For every incoming message: ensure an active lead exists — create one if not
+    if (direction === 'incoming') {
+      const activeLead = await Lead.findOne(
+        { agentPhone, stage: { $nin: ['completed', 'lost'] } },
+        '_id lastActivityAt',
+        { sort: { createdAt: -1 } }
+      );
+
+      if (activeLead) {
+        // Just touch lastActivityAt
+        Lead.updateOne({ _id: activeLead._id }, { lastActivityAt: new Date() }).catch(() => {});
+      } else {
+        // Auto-create a new lead so it appears in the kanban immediately
+        const prefix = 'LEAD';
+        const count = await Lead.countDocuments();
+        const quoteSerial = `${prefix}_${String(count + 1).padStart(3, '0')}`;
+        Lead.create({
+          quoteSerial,
+          agentPhone,
+          agentName: agentName || '',
+          agentCompany: agentCompany || '',
+          stage: 'new_query',
+          source: 'whatsapp_bot',
+          lastActivityAt: new Date()
+        }).catch(err => console.error('Auto-lead create error:', err));
+      }
+    }
 
     res.json({ success: true, message: 'Message saved' });
   } catch (err) {
@@ -207,29 +228,64 @@ app.post('/api/webhook/lead', async (req, res) => {
       ? [{ query: queryText || '', response: responseText || '', timestamp: new Date() }]
       : [];
 
-    const lead = await Lead.findOneAndUpdate(
-      { agentPhone, stage: { $nin: ['completed', 'lost'] } },
-      {
-        $set: {
-          agentName: agentName || '',
-          agentCompany: agentCompany || '',
-          destination: destination || '',
-          checkIn: checkIn || null,
-          checkOut: checkOut || null,
-          nights: nights || 0,
-          adults: adults || 0,
-          kids: kids || 0,
-          rooms: rooms || 0,
-          mealPlan: mealPlan || '',
-          quoteAmount: quoteAmount || 0,
-          stage: stage || 'new_query',
-          source: source || 'whatsapp_bot',
-          lastActivityAt: new Date()
-        },
-        $push: historyEntry.length ? { queryHistory: { $each: historyEntry } } : {}
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+    // Find the most recent new_query lead for this phone — only update if still at initial stage.
+    // If the existing lead has already progressed (quote sent, modify, etc.), this is a NEW enquiry.
+    const existingNewQueryLead = await Lead.findOne(
+      { agentPhone, stage: 'new_query' },
+      null,
+      { sort: { createdAt: -1 } }
     );
+
+    let lead;
+    if (existingNewQueryLead) {
+      // Still at new_query stage — fill in / update the query details
+      const updateOp = {
+        $set: {
+          agentName: agentName || existingNewQueryLead.agentName,
+          agentCompany: agentCompany || existingNewQueryLead.agentCompany,
+          destination: destination || existingNewQueryLead.destination,
+          checkIn: checkIn || existingNewQueryLead.checkIn,
+          checkOut: checkOut || existingNewQueryLead.checkOut,
+          nights: nights || existingNewQueryLead.nights,
+          adults: adults || existingNewQueryLead.adults,
+          kids: kids || existingNewQueryLead.kids,
+          rooms: rooms || existingNewQueryLead.rooms,
+          mealPlan: mealPlan || existingNewQueryLead.mealPlan,
+          quoteAmount: quoteAmount || existingNewQueryLead.quoteAmount,
+          stage: stage || existingNewQueryLead.stage,
+          source: source || existingNewQueryLead.source,
+          lastActivityAt: new Date()
+        }
+      };
+      if (historyEntry.length) updateOp.$push = { queryHistory: { $each: historyEntry } };
+      lead = await Lead.findByIdAndUpdate(existingNewQueryLead._id, updateOp, { new: true });
+    } else {
+      // Either no lead at all, OR existing lead has progressed past new_query (quote_sent, modify, etc.)
+      // → This is a fresh enquiry: create a new lead
+      // Generate quote serial for new lead
+      const prefix = (destination || 'LEAD').trim().slice(0, 4).toUpperCase().replace(/[^A-Z]/g, 'X');
+      const count = await Lead.countDocuments();
+      const quoteSerial = `${prefix}_${String(count + 1).padStart(3, '0')}`;
+      lead = await Lead.create({
+        quoteSerial,
+        agentPhone,
+        agentName: agentName || '',
+        agentCompany: agentCompany || '',
+        destination: destination || '',
+        checkIn: checkIn || null,
+        checkOut: checkOut || null,
+        nights: nights || 0,
+        adults: adults || 0,
+        kids: kids || 0,
+        rooms: rooms || 0,
+        mealPlan: mealPlan || '',
+        quoteAmount: quoteAmount || 0,
+        stage: stage || 'new_query',
+        source: source || 'whatsapp_bot',
+        lastActivityAt: new Date(),
+        queryHistory: historyEntry
+      });
+    }
 
     res.json({ success: true, leadId: lead._id });
   } catch (err) {
