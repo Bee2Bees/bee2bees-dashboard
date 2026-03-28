@@ -1029,6 +1029,7 @@
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.75; } }
 
     .db-error-banner {
       background: var(--danger-red);
@@ -2919,6 +2920,9 @@ async function onDrop(e, newStage) {
     if (data.success) {
       loadLeads();
       if (currentLeadId === draggedLeadId) openLeadDetail(draggedLeadId);
+      if (newStage === 'booking_confirmed') {
+        showToast('✅ बुकिंग automatically बन गई! Bookings tab में देखें।', 'success');
+      }
     } else {
       showToast('Stage update failed', 'error');
     }
@@ -2974,7 +2978,7 @@ function renderLeadDetail(lead) {
   const bkBtnWrap = document.getElementById('detailBookingBtn');
   if (confirmStages.includes(lead.stage)) {
     bkBtnWrap.style.display = '';
-    bkBtnWrap.innerHTML = `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;" onclick="createBookingFromLead(${JSON.stringify(lead)})">📋 Confirmed Booking बनाएं</button>`;
+    bkBtnWrap.innerHTML = `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;" onclick="createBookingFromLead(${JSON.stringify(lead)})">📋 Booking Edit / देखें</button>`;
   } else {
     bkBtnWrap.style.display = 'none';
     bkBtnWrap.innerHTML = '';

@@ -1,6 +1,50 @@
 const express = require('express');
 const router = express.Router();
 const Lead = require('../models/Lead');
+const Booking = require('../models/Booking');
+
+// Auto-create a booking when a lead reaches booking_confirmed stage.
+// Skips silently if a booking already exists for this lead.
+async function autoCreateBooking(lead) {
+  try {
+    const exists = await Booking.findOne({ relatedLead: lead._id });
+    if (exists) return;
+
+    const dest = (lead.destination || 'BOOK').trim().slice(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
+    const count = await Booking.countDocuments();
+    const bookingSerial = `${dest}_${String(count + 1).padStart(3, '0')}`;
+
+    const totalCost = lead.quoteAmount || 0;
+    const received  = lead.advanceAmount || 0;
+
+    await Booking.create({
+      bookingSerial,
+      bookingDate:   new Date(),
+      bookingStatus: 'Confirmed',
+      queryType:     'B2B',
+      agentName:     lead.agentName   || '',
+      agentNumber:   lead.agentPhone  || '',
+      customerName:  lead.guestName   || '',
+      customerNumber:lead.guestPhone  || '',
+      destination:   lead.destination || 'Goa',
+      adults:        lead.adults      || 1,
+      kids:          lead.kids        || 0,
+      rooms:         lead.rooms       || 1,
+      hotels: [{
+        checkIn:  lead.checkIn  || null,
+        checkOut: lead.checkOut || null,
+        nights:   lead.nights   || 0
+      }],
+      totalCost,
+      received,
+      pending:    totalCost - received,
+      quoteSerial: lead.quoteSerial || '',
+      relatedLead: lead._id
+    });
+  } catch (err) {
+    console.error('autoCreateBooking error:', err.message);
+  }
+}
 
 const STAGES = [
   'new_query', 'quote_sent', 'changes_requested', 'follow_up',
@@ -182,6 +226,7 @@ router.put('/update-by-phone', async (req, res) => {
       { new: true, sort: { createdAt: -1 } }
     );
     if (!lead) return res.status(404).json({ error: 'No lead found for this phone' });
+    if (lead.stage === 'booking_confirmed') autoCreateBooking(lead);
     res.json({ success: true, data: lead });
   } catch (err) {
     console.error('update-by-phone error:', err);
@@ -209,6 +254,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       { new: true }
     );
     if (!lead) return res.status(404).json({ error: 'Lead not found' });
+    if (lead.stage === 'booking_confirmed') autoCreateBooking(lead);
     res.json({ success: true, data: lead });
   } catch (err) {
     console.error('Error updating lead:', err);

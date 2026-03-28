@@ -294,6 +294,44 @@ app.post('/api/webhook/lead', async (req, res) => {
   }
 });
 
+// ─── Webhook: Booking from bot ────────────────────────────────────────────────
+app.post('/api/webhook/booking', async (req, res) => {
+  try {
+    const secret = req.headers['x-dashboard-secret'];
+    if (secret !== DASHBOARD_SECRET) {
+      return res.status(403).json({ error: 'Invalid webhook secret' });
+    }
+    if (!dbConnected) return res.status(503).json({ error: 'Database unavailable' });
+
+    const body = req.body;
+
+    // Auto-generate bookingSerial if not provided
+    if (!body.bookingSerial) {
+      const dest = (body.destination || 'BOOK').trim().slice(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
+      const count = await Booking.countDocuments();
+      body.bookingSerial = `${dest}_${String(count + 1).padStart(3, '0')}`;
+    }
+
+    // Auto-calculate pending
+    body.pending = (body.totalCost || 0) - (body.received || 0);
+
+    const booking = await Booking.create(body);
+
+    // Mark related lead as confirmed if quoteSerial provided
+    if (body.quoteSerial) {
+      Lead.findOneAndUpdate(
+        { quoteSerial: body.quoteSerial },
+        { stage: 'booking_confirmed', lastActivityAt: new Date() }
+      ).catch(err => console.error('Lead confirm error:', err));
+    }
+
+    res.json({ success: true, bookingId: booking._id, bookingSerial: booking.bookingSerial });
+  } catch (err) {
+    console.error('Booking webhook error:', err);
+    res.status(500).json({ error: 'Failed to create booking' });
+  }
+});
+
 // ─── Stats Route ──────────────────────────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
   if (!req.isAuthenticated()) {
