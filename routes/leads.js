@@ -21,6 +21,17 @@ async function autoCreateBooking(lead) {
     const noBreakfastPlans = ['EP', 'ep'];
     const breakfastIncluded = noBreakfastPlans.includes((lead.mealPlan || '').trim()) ? 'No' : 'Yes';
 
+    // Auto-generate day-wise itinerary rows (blank) based on nights
+    const itinerary = [];
+    const nights = lead.nights || 0;
+    if (nights > 0 && lead.checkIn) {
+      for (let i = 0; i < nights; i++) {
+        const date = new Date(lead.checkIn);
+        date.setDate(date.getDate() + i);
+        itinerary.push({ day: i + 1, date, activity: '', activityDescription: '', lunchIncluded: 'None', dinnerIncluded: 'None' });
+      }
+    }
+
     await Booking.create({
       bookingSerial,
       bookingDate:    new Date(),
@@ -45,6 +56,7 @@ async function autoCreateBooking(lead) {
       totalCost,
       received,
       pending:     totalCost - received,
+      itinerary,
       quoteSerial: lead.quoteSerial || '',
       relatedLead: lead._id,
       remarks:     lead.mealPlan ? `Meal Plan: ${lead.mealPlan}` : ''
