@@ -64,6 +64,16 @@ const leadSchema = new mongoose.Schema({
   // Notes (array of {text, addedBy, addedAt})
   notes: [noteSchema],
 
+  // Day-wise itinerary from bot
+  itinerary: [{
+    day:                 { type: Number, default: 1 },
+    date:                { type: Date,   default: null },
+    activity:            { type: String, default: '' },
+    activityDescription: { type: String, default: '' },
+    lunchIncluded:       { type: String, default: 'None' },
+    dinnerIncluded:      { type: String, default: 'None' }
+  }],
+
   // Full query history from bot
   queryHistory: [queryHistorySchema]
 }, {

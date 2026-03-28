@@ -21,14 +21,25 @@ async function autoCreateBooking(lead) {
     const noBreakfastPlans = ['EP', 'ep'];
     const breakfastIncluded = noBreakfastPlans.includes((lead.mealPlan || '').trim()) ? 'No' : 'Yes';
 
-    // Auto-generate day-wise itinerary rows (blank) based on nights
-    const itinerary = [];
-    const nights = lead.nights || 0;
-    if (nights > 0 && lead.checkIn) {
-      for (let i = 0; i < nights; i++) {
-        const date = new Date(lead.checkIn);
-        date.setDate(date.getDate() + i);
-        itinerary.push({ day: i + 1, date, activity: '', activityDescription: '', lunchIncluded: 'None', dinnerIncluded: 'None' });
+    // Use bot-supplied itinerary if present, otherwise generate blank rows from nights
+    let itinerary = [];
+    if (lead.itinerary && lead.itinerary.length) {
+      itinerary = lead.itinerary.map(d => ({
+        day:                 d.day,
+        date:                d.date || null,
+        activity:            d.activity || '',
+        activityDescription: d.activityDescription || '',
+        lunchIncluded:       d.lunchIncluded || 'None',
+        dinnerIncluded:      d.dinnerIncluded || 'None'
+      }));
+    } else {
+      const nights = lead.nights || 0;
+      if (nights > 0 && lead.checkIn) {
+        for (let i = 0; i < nights; i++) {
+          const date = new Date(lead.checkIn);
+          date.setDate(date.getDate() + i);
+          itinerary.push({ day: i + 1, date, activity: '', activityDescription: '', lunchIncluded: 'None', dinnerIncluded: 'None' });
+        }
       }
     }
 
@@ -229,7 +240,7 @@ router.put('/update-by-phone', async (req, res) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
   try {
-    const { agentPhone, stage, quoteAmount, advanceAmount, hotelName, guestName } = req.body;
+    const { agentPhone, stage, quoteAmount, advanceAmount, hotelName, guestName, itinerary } = req.body;
     if (!agentPhone) return res.status(400).json({ error: 'agentPhone required' });
 
     const updateFields = { lastActivityAt: new Date() };
@@ -238,6 +249,7 @@ router.put('/update-by-phone', async (req, res) => {
     if (advanceAmount !== undefined) updateFields.advanceAmount = advanceAmount;
     if (hotelName) updateFields.hotelName = hotelName;
     if (guestName) updateFields.guestName = guestName;
+    if (Array.isArray(itinerary) && itinerary.length) updateFields.itinerary = itinerary;
 
     // Update most recent lead for this phone
     const lead = await Lead.findOneAndUpdate(
