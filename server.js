@@ -134,25 +134,34 @@ app.post('/api/webhook/message', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: agentPhone, message, direction' });
     }
 
-    // Upsert conversation — only overwrite agentName if the bot actually sends a real name
-    const nameUpdate = agentName && agentName.trim() && agentName.trim().toLowerCase() !== 'unknown'
-      ? { agentName: agentName.trim() }
-      : {};
+    // Upsert conversation — only overwrite agentName if the bot sends a real name.
+    // agentName must NOT appear in both $set and $setOnInsert (MongoDB conflict).
+    const realName = agentName && agentName.trim() && agentName.trim().toLowerCase() !== 'unknown'
+      ? agentName.trim()
+      : null;
+    const updateOp = realName
+      ? {
+          // Real name received: put it in $set (updates existing + new inserts)
+          $set: {
+            agentName: realName,
+            agentCompany: agentCompany || '',
+            lastMessage: message,
+            lastMessageTime: new Date()
+          },
+          $setOnInsert: { status: 'bot', unreadCount: 0 }
+        }
+      : {
+          // No real name: don't touch agentName on existing docs; set 'Unknown' only on new insert
+          $set: {
+            agentCompany: agentCompany || '',
+            lastMessage: message,
+            lastMessageTime: new Date()
+          },
+          $setOnInsert: { agentName: 'Unknown', status: 'bot', unreadCount: 0 }
+        };
     let conversation = await Conversation.findOneAndUpdate(
       { agentPhone },
-      {
-        $set: {
-          ...nameUpdate,
-          agentCompany: agentCompany || '',
-          lastMessage: message,
-          lastMessageTime: new Date()
-        },
-        $setOnInsert: {
-          agentName: agentName && agentName.trim() ? agentName.trim() : 'Unknown',
-          status: 'bot',
-          unreadCount: 0
-        }
-      },
+      updateOp,
       { upsert: true, new: true }
     );
 
