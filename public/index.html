@@ -2782,17 +2782,26 @@ async function sendMessage() {
 // ═══════════════════════════════════════════════════════════
 // CRM LEADS KANBAN
 // ═══════════════════════════════════════════════════════════
-const KANBAN_COLS = [
-  { stage: 'new_query',          label: '📩 नई पूछताछ',      cls: 'col-new_query' },
-  { stage: 'quote_sent',         label: '💬 कोटेशन भेजा',    cls: 'col-quote_sent' },
-  { stage: 'changes_requested',  label: '🔄 बदलाव चाहिए',    cls: 'col-changes_requested' },
-  { stage: 'follow_up',          label: '📞 फॉलो अप',        cls: 'col-follow_up' },
-  { stage: 'booking_confirmed',  label: '✅ बुकिंग कन्फर्म', cls: 'col-booking_confirmed' },
-  { stage: 'advance_received',   label: '💰 एडवांस मिला',    cls: 'col-advance_received' },
-  { stage: 'voucher_sent',       label: '📄 वाउचर भेजा',     cls: 'col-voucher_sent' },
-  { stage: 'completed',          label: '🎉 पूरा हुआ',        cls: 'col-completed' },
-  { stage: 'lost',               label: '❌ नहीं बना',        cls: 'col-lost' }
+const KANBAN_STAGE_KEYS = [
+  { stage: 'new_query',         key: 'stage_new_query',         cls: 'col-new_query' },
+  { stage: 'quote_sent',        key: 'stage_quote_sent',        cls: 'col-quote_sent' },
+  { stage: 'changes_requested', key: 'stage_changes',           cls: 'col-changes_requested' },
+  { stage: 'follow_up',         key: 'stage_follow_up',         cls: 'col-follow_up' },
+  { stage: 'booking_confirmed', key: 'stage_booking_confirmed', cls: 'col-booking_confirmed' },
+  { stage: 'advance_received',  key: 'stage_advance',           cls: 'col-advance_received' },
+  { stage: 'voucher_sent',      key: 'stage_voucher',           cls: 'col-voucher_sent' },
+  { stage: 'completed',         key: 'stage_completed',         cls: 'col-completed' },
+  { stage: 'lost',              key: 'stage_lost',              cls: 'col-lost' }
 ];
+
+function getKanbanCols() {
+  const lang = localStorage.getItem('dashboardLang') || 'hi';
+  const t = TRANSLATIONS[lang] || TRANSLATIONS['hi'];
+  return KANBAN_STAGE_KEYS.map(c => ({ ...c, label: t[c.key] || c.key }));
+}
+
+// Keep KANBAN_COLS as a getter alias for compatibility
+Object.defineProperty(window, 'KANBAN_COLS', { get: getKanbanCols });
 
 let leadDebounceTimer = null;
 let currentLeadId = null;
@@ -5774,6 +5783,8 @@ function applyLanguage(lang) {
 function setLanguage(lang) {
   localStorage.setItem('dashboardLang', lang);
   applyLanguage(lang);
+  // Re-render kanban so column headers update immediately
+  if (typeof loadLeads === 'function') loadLeads();
   showToast('✅ Language updated', 'success');
 }
 </script>
