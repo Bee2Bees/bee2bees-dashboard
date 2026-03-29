@@ -217,6 +217,39 @@ router.post('/:phone/send', requireAuth, async (req, res) => {
   }
 });
 
+// PATCH /api/conversations/:phone/name - update contact name
+router.patch('/:phone/name', requireAuth, async (req, res) => {
+  try {
+    const phone = req.params.phone;
+    const { agentName } = req.body;
+    if (!agentName || !agentName.trim()) {
+      return res.status(400).json({ error: 'agentName is required' });
+    }
+    const name = agentName.trim();
+
+    const conversation = await Conversation.findOneAndUpdate(
+      { agentPhone: phone },
+      { $set: { agentName: name } },
+      { new: true }
+    );
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Also sync name to any open leads for this phone
+    const Lead = require('../models/Lead');
+    await Lead.updateMany(
+      { agentPhone: phone, stage: { $nin: ['completed', 'lost'] } },
+      { $set: { agentName: name } }
+    );
+
+    res.json({ success: true, data: conversation });
+  } catch (err) {
+    console.error('Error updating contact name:', err);
+    res.status(500).json({ error: 'Failed to update name' });
+  }
+});
+
 // GET /api/conversations/:phone/status - bot checks if conversation is taken over
 // No login required; validated by X-Dashboard-Secret header
 router.get('/:phone/status', (req, res, next) => {

@@ -134,17 +134,21 @@ app.post('/api/webhook/message', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: agentPhone, message, direction' });
     }
 
-    // Upsert conversation
+    // Upsert conversation — only overwrite agentName if the bot actually sends a real name
+    const nameUpdate = agentName && agentName.trim() && agentName.trim().toLowerCase() !== 'unknown'
+      ? { agentName: agentName.trim() }
+      : {};
     let conversation = await Conversation.findOneAndUpdate(
       { agentPhone },
       {
         $set: {
-          agentName: agentName || 'Unknown',
+          ...nameUpdate,
           agentCompany: agentCompany || '',
           lastMessage: message,
           lastMessageTime: new Date()
         },
         $setOnInsert: {
+          agentName: agentName && agentName.trim() ? agentName.trim() : 'Unknown',
           status: 'bot',
           unreadCount: 0
         }

@@ -1246,7 +1246,8 @@
         <div id="chatView" class="hidden" style="display:flex; flex-direction:column; height:100%;">
           <div class="chat-header">
             <div class="chat-header-info">
-              <h3 id="chatHeaderName">Agent Name</h3>
+              <h3 id="chatHeaderName" style="display:inline;">Agent Name</h3>
+              <button onclick="editContactName()" title="Edit name" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;margin-left:6px;vertical-align:middle;" id="editNameBtn">✏️</button>
               <p id="chatHeaderSub">Company • Phone</p>
             </div>
             <div class="chat-header-actions" id="chatHeaderActions"></div>
@@ -2597,6 +2598,31 @@ async function openConversation(phone) {
   } catch (e) {
     console.error('Failed to load conversation:', e);
     showToast('बातचीत लोड नहीं हो सकी', 'error');
+  }
+}
+
+async function editContactName() {
+  if (!state.currentPhone) return;
+  const conv = state.conversations.find(c => c.agentPhone === state.currentPhone);
+  const current = conv ? (conv.agentName || '') : '';
+  const newName = prompt('Enter contact name:', current === 'Unknown' ? '' : current);
+  if (newName === null || !newName.trim()) return;
+  try {
+    const res = await fetch(`/api/conversations/${encodeURIComponent(state.currentPhone)}/name`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentName: newName.trim() })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ Name updated', 'success');
+      await loadConversations();
+      await openConversation(state.currentPhone);
+    } else {
+      showToast('❌ ' + (data.error || 'Failed to update name'), 'error');
+    }
+  } catch (e) {
+    showToast('❌ Failed to update name', 'error');
   }
 }
 
