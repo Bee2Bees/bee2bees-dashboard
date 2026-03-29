@@ -1279,12 +1279,12 @@
           <div class="crm-stat-divider"></div>
           <div class="crm-stat-item">
             <div class="crm-stat-val" id="statRevenue">-</div>
-            <div class="crm-stat-lbl">Revenue<br>(Completed)</div>
+            <div class="crm-stat-lbl" data-i18n="stat_revenue">Revenue (Completed)</div>
           </div>
           <div class="crm-stat-divider"></div>
           <div class="crm-stat-item">
             <div class="crm-stat-val" id="statConversion">-</div>
-            <div class="crm-stat-lbl">Conversion<br>Rate</div>
+            <div class="crm-stat-lbl" data-i18n="stat_conversion">Conversion Rate</div>
           </div>
         </div>
         <!-- Toolbar -->
@@ -1336,18 +1336,18 @@
     <div id="reportsPage" class="page">
       <!-- Period filter bar -->
       <div style="background:#fff;border-bottom:1px solid #e4e7ec;padding:12px 20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
-        <span style="font-size:13px;font-weight:600;color:#374151;">Period:</span>
-        <button class="rpt-period-btn active" data-period="month" onclick="setReportPeriod(this)">Month</button>
-        <button class="rpt-period-btn" data-period="today" onclick="setReportPeriod(this)">Today</button>
-        <button class="rpt-period-btn" data-period="week" onclick="setReportPeriod(this)">Week</button>
-        <button class="rpt-period-btn" data-period="year" onclick="setReportPeriod(this)">Year</button>
-        <button class="rpt-period-btn" data-period="custom" onclick="setReportPeriod(this)">Custom</button>
+        <span style="font-size:13px;font-weight:600;color:#374151;" data-i18n="rpt_period">Period:</span>
+        <button class="rpt-period-btn active" data-period="month" onclick="setReportPeriod(this)" data-i18n="period_month">Month</button>
+        <button class="rpt-period-btn" data-period="today" onclick="setReportPeriod(this)" data-i18n="period_today">Today</button>
+        <button class="rpt-period-btn" data-period="week" onclick="setReportPeriod(this)" data-i18n="period_week">Week</button>
+        <button class="rpt-period-btn" data-period="year" onclick="setReportPeriod(this)" data-i18n="period_year">Year</button>
+        <button class="rpt-period-btn" data-period="custom" onclick="setReportPeriod(this)" data-i18n="rpt_custom">Custom</button>
         <div id="rptCustomRange" style="display:none;gap:6px;align-items:center;display:none;">
           <input type="date" id="rptFrom" class="form-control" style="width:130px;" onchange="loadReports()">
-          <span style="color:#6b7280;">to</span>
+          <span style="color:#6b7280;" data-i18n="rpt_to">to</span>
           <input type="date" id="rptTo" class="form-control" style="width:130px;" onchange="loadReports()">
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="loadReports()">🔄 Refresh</button>
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="loadReports()" data-i18n="btn_refresh">🔄 Refresh</button>
       </div>
 
       <!-- Scrollable content -->
@@ -1404,11 +1404,11 @@
                   <input type="checkbox" id="selectAllContacts" onchange="toggleSelectAll(this)">
                 </th>
                 <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_name">नाम (Name)</th>
-                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">📱 Phone</th>
-                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">🏢 Company</th>
-                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">🏙️ City</th>
-                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Source</th>
-                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">Status</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_phone">📱 Phone</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_company">🏢 Company</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_city">🏙️ City</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_source">Source</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_status">Status</th>
               </tr>
             </thead>
             <tbody id="contactsBody">
@@ -3404,68 +3404,68 @@ async function loadReports() {
     const { leads, bookings, topAgents, staffPerformance, vendors } = data;
     const fmtMoney = n => '₹' + (n || 0).toLocaleString('en-IN');
     const stagePills = [
-      { key: 'new_query', label: 'New Query', color: '#e0f2fe', tc: '#0369a1' },
-      { key: 'quote_sent', label: 'Quoted', color: '#fef9c3', tc: '#854d0e' },
-      { key: 'changes_requested', label: 'Changes', color: '#fce7f3', tc: '#9d174d' },
-      { key: 'follow_up', label: 'Follow Up', color: '#ede9fe', tc: '#6d28d9' },
-      { key: 'booking_confirmed', label: 'Confirmed', color: '#d1fae5', tc: '#065f46' },
-      { key: 'advance_received', label: 'Advance Rcvd', color: '#dcfce7', tc: '#166534' },
-      { key: 'voucher_sent', label: 'Voucher Sent', color: '#e0f2fe', tc: '#075985' },
-      { key: 'completed', label: 'Completed', color: '#f0fdf4', tc: '#15803d' },
-      { key: 'lost', label: 'Lost', color: '#fee2e2', tc: '#991b1b' }
+      { key: 'new_query',         tKey: 'stage_new_query',         color: '#e0f2fe', tc: '#0369a1' },
+      { key: 'quote_sent',        tKey: 'stage_quote_sent',        color: '#fef9c3', tc: '#854d0e' },
+      { key: 'changes_requested', tKey: 'stage_changes',           color: '#fce7f3', tc: '#9d174d' },
+      { key: 'follow_up',         tKey: 'stage_follow_up',         color: '#ede9fe', tc: '#6d28d9' },
+      { key: 'booking_confirmed', tKey: 'stage_booking_confirmed', color: '#d1fae5', tc: '#065f46' },
+      { key: 'advance_received',  tKey: 'stage_advance',           color: '#dcfce7', tc: '#166534' },
+      { key: 'voucher_sent',      tKey: 'stage_voucher',           color: '#e0f2fe', tc: '#075985' },
+      { key: 'completed',         tKey: 'stage_completed',         color: '#f0fdf4', tc: '#15803d' },
+      { key: 'lost',              tKey: 'stage_lost',              color: '#fee2e2', tc: '#991b1b' }
     ];
 
     content.innerHTML = `
     <!-- Leads Card -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <h3 style="font-size:15px;font-weight:700;">👥 Leads / Queries</h3>
+        <h3 style="font-size:15px;font-weight:700;">👥 ${t('rpt_leads_title')}</h3>
         <div style="text-align:right;">
           <span style="font-size:22px;font-weight:800;color:#1a1a2e;">${leads.total}</span>
-          <div style="font-size:10px;color:#9ca3af;margin-top:1px;">active in period</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px;">${t('rpt_active_period')}</div>
         </div>
       </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">📥 New queries received this period: <strong style="color:#0369a1;">${leads.received || 0}</strong></div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">📥 ${t('rpt_new_queries')}: <strong style="color:#0369a1;">${leads.received || 0}</strong></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        ${stagePills.map(p => `<div style="background:${p.color};color:${p.tc};padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;">${p.label}: ${leads[p.key] || 0}</div>`).join('')}
+        ${stagePills.map(p => `<div style="background:${p.color};color:${p.tc};padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;">${t(p.tKey)}: ${leads[p.key] || 0}</div>`).join('')}
       </div>
     </div>
 
     <!-- Bookings Card -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">📋 Bookings</h3>
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">📋 ${t('nav_bookings')}</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;">
-        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;">${bookings.total}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Total</div></div>
-        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#16a34a;">${bookings.confirmed}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Confirmed</div></div>
-        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#d97706;">${bookings.onHold}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">On Hold</div></div>
-        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#dc2626;">${bookings.cancelled}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Cancelled</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;">${bookings.total}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_total')}</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#16a34a;">${bookings.confirmed}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_confirmed')}</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#d97706;">${bookings.onHold}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_on_hold')}</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#dc2626;">${bookings.cancelled}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_cancelled')}</div></div>
       </div>
     </div>
 
     <!-- Revenue & Profit Card -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">💰 Revenue & Profit</h3>
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">💰 ${t('rpt_revenue_profit')}</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:10px;">
-        <div style="text-align:center;background:#f0fdf4;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#16a34a;">${fmtMoney(bookings.revenue)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Revenue</div></div>
-        <div style="text-align:center;background:#eff6ff;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#1d4ed8;">${fmtMoney(bookings.received)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Received</div></div>
-        <div style="text-align:center;background:#fff7ed;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#ea580c;">${fmtMoney(bookings.pending)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Pending</div></div>
-        <div style="text-align:center;background:#fef9c3;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#854d0e;">${fmtMoney(bookings.totalCost)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Actual Cost</div></div>
-        <div style="text-align:center;background:${bookings.profit>=0?'#f0fdf4':'#fee2e2'};border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:${bookings.profit>=0?'#16a34a':'#dc2626'};">${fmtMoney(bookings.profit)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Profit</div></div>
+        <div style="text-align:center;background:#f0fdf4;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#16a34a;">${fmtMoney(bookings.revenue)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_revenue')}</div></div>
+        <div style="text-align:center;background:#eff6ff;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#1d4ed8;">${fmtMoney(bookings.received)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_received')}</div></div>
+        <div style="text-align:center;background:#fff7ed;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#ea580c;">${fmtMoney(bookings.pending)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_pending')}</div></div>
+        <div style="text-align:center;background:#fef9c3;border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:#854d0e;">${fmtMoney(bookings.totalCost)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_actual_cost')}</div></div>
+        <div style="text-align:center;background:${bookings.profit>=0?'#f0fdf4':'#fee2e2'};border-radius:8px;padding:12px;"><div style="font-size:18px;font-weight:800;color:${bookings.profit>=0?'#16a34a':'#dc2626'};">${fmtMoney(bookings.profit)}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">${t('rpt_profit')}</div></div>
       </div>
-      <div style="text-align:center;font-size:13px;color:#6b7280;">Margin: <strong style="color:${bookings.margin>=0?'#16a34a':'#dc2626'}">${bookings.margin}%</strong></div>
+      <div style="text-align:center;font-size:13px;color:#6b7280;">${t('rpt_margin')}: <strong style="color:${bookings.margin>=0?'#16a34a':'#dc2626'}">${bookings.margin}%</strong></div>
     </div>
 
     <!-- Top Agents -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">🏆 Top Agents (B2B)</h3>
-      ${topAgents.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No data for selected period.</p>' : `
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">🏆 ${t('rpt_top_agents')}</h3>
+      ${topAgents.length === 0 ? `<p style="color:#9ca3af;font-size:13px;">${t('rpt_no_data')}</p>` : `
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f9fafb;">
           <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">#</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Agent</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Queries</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Bookings</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Revenue</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">${t('rpt_agent')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('stat_queries')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('nav_bookings')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('rpt_revenue')}</th>
         </tr></thead>
         <tbody>${topAgents.map((a,i) => `<tr style="border-bottom:1px solid #f3f4f6;">
           <td style="padding:8px 12px;color:#9ca3af;font-weight:700;">${i+1}</td>
@@ -3479,14 +3479,14 @@ async function loadReports() {
 
     <!-- Staff Performance -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">👤 In-House Staff Performance</h3>
-      ${staffPerformance.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No data for selected period.</p>' : `
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">👤 ${t('rpt_staff_perf')}</h3>
+      ${staffPerformance.length === 0 ? `<p style="color:#9ca3af;font-size:13px;">${t('rpt_no_data')}</p>` : `
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f9fafb;">
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Staff</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Leads</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Bookings</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Revenue</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">${t('rpt_staff')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('nav_leads')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('nav_bookings')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('rpt_revenue')}</th>
         </tr></thead>
         <tbody>${staffPerformance.map(s => `<tr style="border-bottom:1px solid #f3f4f6;">
           <td style="padding:8px 12px;font-weight:600;">${esc(s.name)}</td>
@@ -3499,14 +3499,14 @@ async function loadReports() {
 
     <!-- Vendor Spend -->
     <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">🏪 Vendor Spend</h3>
-      ${vendors.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No vendor cost data for selected period.</p>' : `
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">🏪 ${t('rpt_vendor_spend')}</h3>
+      ${vendors.length === 0 ? `<p style="color:#9ca3af;font-size:13px;">${t('rpt_no_vendor_data')}</p>` : `
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f9fafb;">
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Vendor</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">Category</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Total Paid</th>
-          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">Bookings</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">${t('rpt_vendor')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:left;">${t('rpt_category')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('rpt_total_paid')}</th>
+          <th style="padding:8px 12px;border-bottom:1px solid #e4e7ec;text-align:right;">${t('nav_bookings')}</th>
         </tr></thead>
         <tbody>${vendors.map(v => `<tr style="border-bottom:1px solid #f3f4f6;">
           <td style="padding:8px 12px;font-weight:600;">${esc(v.name)}</td>
@@ -3517,7 +3517,7 @@ async function loadReports() {
       </table>`}
     </div>`;
   } catch (e) {
-    content.innerHTML = '<div style="text-align:center;padding:60px;color:#ef4444;">Reports लोड नहीं हो सकी ⚠️<br><small>' + e.message + '</small></div>';
+    content.innerHTML = `<div style="text-align:center;padding:60px;color:#ef4444;">${t('rpt_load_error')} ⚠️<br><small>` + e.message + '</small></div>';
     console.error(e);
   }
 }
@@ -5554,6 +5554,23 @@ const TRANSLATIONS = {
     // Vendors
     vendors_title: 'Vendors', vendors_subtitle: 'Manage vendor master list',
     btn_new_vendor: '+ New Vendor', all_categories: '📁 All Categories',
+    // Leads stats
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    // Reports page bar
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    // Reports content
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'active in period',
+    rpt_new_queries: 'New queries received this period',
+    rpt_total: 'Total', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent',
+    rpt_staff_perf: 'In-House Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'No data for selected period.', rpt_no_vendor_data: 'No vendor cost data for selected period.',
+    rpt_load_error: 'Could not load reports',
+    // Campaigns columns
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   hi: {
     nav_conversations: 'बातचीत', nav_leads: 'लीड्स', nav_reports: 'रिपोर्ट',
@@ -5580,6 +5597,19 @@ const TRANSLATIONS = {
     all_star: '⭐ सभी Star', all_category: '📁 सभी Category',
     vendors_title: 'वेंडर्स (Vendors)', vendors_subtitle: 'Vendor master list manage करें',
     btn_new_vendor: '+ नया Vendor', all_categories: '📁 सभी Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'इस period में active',
+    rpt_new_queries: 'इस period में नई queries',
+    rpt_total: 'कुल', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent',
+    rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'इस period में कोई data नहीं।', rpt_no_vendor_data: 'इस period में कोई vendor cost नहीं।',
+    rpt_load_error: 'Reports लोड नहीं हो सकी',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   gu: {
     nav_conversations: 'વાર્તાલાપ', nav_leads: 'લીડ્સ', nav_reports: 'અહેવાલ',
@@ -5606,6 +5636,18 @@ const TRANSLATIONS = {
     all_star: '⭐ બધા Star', all_category: '📁 બધી Category',
     vendors_title: 'વેન્ડર (Vendors)', vendors_subtitle: 'Vendor master list manage કરો',
     btn_new_vendor: '+ નવો Vendor', all_categories: '📁 બધી Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'આ period માં active',
+    rpt_new_queries: 'આ period માં નવી queries',
+    rpt_total: 'કુલ', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'આ period માટે કોઈ data નથી.', rpt_no_vendor_data: 'આ period માટે vendor cost નથી.',
+    rpt_load_error: 'Reports લોડ થઈ શકી નહિ',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   mr: {
     nav_conversations: 'संभाषण', nav_leads: 'लीड्स', nav_reports: 'अहवाल',
@@ -5632,6 +5674,18 @@ const TRANSLATIONS = {
     all_star: '⭐ सर्व Star', all_category: '📁 सर्व Category',
     vendors_title: 'विक्रेते (Vendors)', vendors_subtitle: 'Vendor master list manage करा',
     btn_new_vendor: '+ नवीन Vendor', all_categories: '📁 सर्व Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'या period मध्ये active',
+    rpt_new_queries: 'या period मध्ये नवीन queries',
+    rpt_total: 'एकूण', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'या period साठी कोणताही data नाही.', rpt_no_vendor_data: 'या period साठी vendor cost नाही.',
+    rpt_load_error: 'Reports लोड होऊ शकली नाही',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   bn: {
     nav_conversations: 'কথোপকথন', nav_leads: 'লিড', nav_reports: 'প্রতিবেদন',
@@ -5658,6 +5712,18 @@ const TRANSLATIONS = {
     all_star: '⭐ সব Star', all_category: '📁 সব Category',
     vendors_title: 'বিক্রেতা (Vendors)', vendors_subtitle: 'Vendor master list পরিচালনা করুন',
     btn_new_vendor: '+ নতুন Vendor', all_categories: '📁 সব Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'এই period এ active',
+    rpt_new_queries: 'এই period এ নতুন queries',
+    rpt_total: 'মোট', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'এই period এর জন্য কোনো data নেই।', rpt_no_vendor_data: 'এই period এর জন্য vendor cost নেই।',
+    rpt_load_error: 'Reports লোড করা যায়নি',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   ta: {
     nav_conversations: 'உரையாடல்கள்', nav_leads: 'லீட்கள்', nav_reports: 'அறிக்கைகள்',
@@ -5684,6 +5750,18 @@ const TRANSLATIONS = {
     all_star: '⭐ அனைத்து Star', all_category: '📁 அனைத்து Category',
     vendors_title: 'விற்பனையாளர்கள் (Vendors)', vendors_subtitle: 'Vendor பட்டியல் நிர்வகிக்கவும்',
     btn_new_vendor: '+ புதிய Vendor', all_categories: '📁 அனைத்து Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'இந்த period இல் active',
+    rpt_new_queries: 'இந்த period இல் புதிய queries',
+    rpt_total: 'மொத்தம்', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'தேர்ந்தெடுத்த period க்கு data இல்லை.', rpt_no_vendor_data: 'Vendor cost data இல்லை.',
+    rpt_load_error: 'Reports ஏற்ற முடியவில்லை',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   te: {
     nav_conversations: 'సంభాషణలు', nav_leads: 'లీడ్స్', nav_reports: 'నివేదికలు',
@@ -5710,6 +5788,18 @@ const TRANSLATIONS = {
     all_star: '⭐ అన్ని Star', all_category: '📁 అన్ని Category',
     vendors_title: 'విక్రేతలు (Vendors)', vendors_subtitle: 'Vendor జాబితా నిర్వహించండి',
     btn_new_vendor: '+ కొత్త Vendor', all_categories: '📁 అన్ని Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'ఈ period లో active',
+    rpt_new_queries: 'ఈ period లో కొత్త queries',
+    rpt_total: 'మొత్తం', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'ఎంచుకున్న period కు data లేదు.', rpt_no_vendor_data: 'Vendor cost data లేదు.',
+    rpt_load_error: 'Reports లోడ్ చేయలేదు',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   kn: {
     nav_conversations: 'ಸಂಭಾಷಣೆಗಳು', nav_leads: 'ಲೀಡ್ಸ್', nav_reports: 'ವರದಿಗಳು',
@@ -5736,6 +5826,18 @@ const TRANSLATIONS = {
     all_star: '⭐ ಎಲ್ಲಾ Star', all_category: '📁 ಎಲ್ಲಾ Category',
     vendors_title: 'ಮಾರಾಟಗಾರರು (Vendors)', vendors_subtitle: 'Vendor ಪಟ್ಟಿ ನಿರ್ವಹಿಸಿ',
     btn_new_vendor: '+ ಹೊಸ Vendor', all_categories: '📁 ಎಲ್ಲಾ Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'ಈ period ನಲ್ಲಿ active',
+    rpt_new_queries: 'ಈ period ನಲ್ಲಿ ಹೊಸ queries',
+    rpt_total: 'ಒಟ್ಟು', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'ಆಯ್ಕೆ period ಗೆ data ಇಲ್ಲ.', rpt_no_vendor_data: 'Vendor cost data ಇಲ್ಲ.',
+    rpt_load_error: 'Reports ಲೋಡ್ ಆಗಲಿಲ್ಲ',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
   pa: {
     nav_conversations: 'ਗੱਲਬਾਤ', nav_leads: 'ਲੀਡਸ', nav_reports: 'ਰਿਪੋਰਟਾਂ',
@@ -5762,8 +5864,27 @@ const TRANSLATIONS = {
     all_star: '⭐ ਸਾਰੇ Star', all_category: '📁 ਸਾਰੀਆਂ Category',
     vendors_title: 'ਵਿਕ੍ਰੇਤਾ (Vendors)', vendors_subtitle: 'Vendor ਮਾਸਟਰ ਲਿਸਟ ਪ੍ਰਬੰਧ ਕਰੋ',
     btn_new_vendor: '+ ਨਵਾਂ Vendor', all_categories: '📁 ਸਾਰੀਆਂ Categories',
+    stat_revenue: 'Revenue (Completed)', stat_conversion: 'Conversion Rate',
+    rpt_period: 'Period:', rpt_custom: 'Custom', rpt_to: 'to',
+    rpt_leads_title: 'Leads / Queries', rpt_active_period: 'ਇਸ period ਵਿੱਚ active',
+    rpt_new_queries: 'ਇਸ period ਵਿੱਚ ਨਵੀਆਂ queries',
+    rpt_total: 'ਕੁੱਲ', rpt_confirmed: 'Confirmed', rpt_on_hold: 'On Hold', rpt_cancelled: 'Cancelled',
+    rpt_revenue_profit: 'Revenue & Profit', rpt_revenue: 'Revenue', rpt_received: 'Received',
+    rpt_pending: 'Pending', rpt_actual_cost: 'Actual Cost', rpt_profit: 'Profit', rpt_margin: 'Margin',
+    rpt_top_agents: 'Top Agents (B2B)', rpt_agent: 'Agent', rpt_staff_perf: 'Staff Performance', rpt_staff: 'Staff',
+    rpt_vendor_spend: 'Vendor Spend', rpt_vendor: 'Vendor', rpt_category: 'Category', rpt_total_paid: 'Total Paid',
+    rpt_no_data: 'ਇਸ period ਲਈ ਕੋਈ data ਨਹੀਂ।', rpt_no_vendor_data: 'Vendor cost data ਨਹੀਂ।',
+    rpt_load_error: 'Reports ਲੋਡ ਨਹੀਂ ਹੋਈ',
+    col_phone: '📱 Phone', col_company: '🏢 Company', col_city: '🏙️ City', col_source: 'Source', col_status: 'Status',
   },
 };
+
+// Helper: get a translation for the current language
+function t(key) {
+  const lang = localStorage.getItem('dashboardLang') || 'hi';
+  const tr = TRANSLATIONS[lang] || TRANSLATIONS['hi'];
+  return tr[key] || key;
+}
 
 function applyLanguage(lang) {
   const t = TRANSLATIONS[lang] || TRANSLATIONS['hi'];
