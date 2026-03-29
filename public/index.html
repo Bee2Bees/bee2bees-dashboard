@@ -1165,36 +1165,36 @@
     <div class="sidebar-nav">
       <div class="nav-item active" data-page="conversations">
         <span class="icon">💬</span>
-        <span>बातचीत <small>(Conversations)</small></span>
+        <span data-i18n="nav_conversations">बातचीत <small>(Conversations)</small></span>
         <span class="nav-badge hidden" id="unreadBadge">0</span>
       </div>
       <div class="nav-item" data-page="leads">
         <span class="icon">👥</span>
-        <span>लीड्स <small>(Leads)</small></span>
+        <span data-i18n="nav_leads">लीड्स <small>(Leads)</small></span>
       </div>
       <div class="nav-item" data-page="reports">
         <span class="icon">📊</span>
-        <span>रिपोर्ट <small>(Reports)</small></span>
+        <span data-i18n="nav_reports">रिपोर्ट <small>(Reports)</small></span>
       </div>
       <div class="nav-item" data-page="campaigns">
         <span class="icon">📢</span>
-        <span>अभियान <small>(Campaigns)</small></span>
+        <span data-i18n="nav_campaigns">अभियान <small>(Campaigns)</small></span>
       </div>
       <div class="nav-item" data-page="pricing">
         <span class="icon">💰</span>
-        <span>प्राइसिंग <small>(Pricing)</small></span>
+        <span data-i18n="nav_pricing">प्राइसिंग <small>(Pricing)</small></span>
       </div>
       <div class="nav-item" data-page="bookings">
         <span class="icon">📋</span>
-        <span>बुकिंग्स <small>(Bookings)</small></span>
+        <span data-i18n="nav_bookings">बुकिंग्स <small>(Bookings)</small></span>
       </div>
       <div class="nav-item" data-page="vendors">
         <span class="icon">🏪</span>
-        <span>वेंडर्स <small>(Vendors)</small></span>
+        <span data-i18n="nav_vendors">वेंडर्स <small>(Vendors)</small></span>
       </div>
       <div class="nav-item" data-page="settings">
         <span class="icon">⚙️</span>
-        <span>सेटिंग्स <small>(Settings)</small></span>
+        <span data-i18n="nav_settings">सेटिंग्स <small>(Settings)</small></span>
       </div>
     </div>
     <div class="sidebar-footer">
@@ -1206,7 +1206,7 @@
         </div>
       </div>
       <button class="btn-logout" onclick="logout()">
-        🚪 लॉगआउट करें
+        🚪 <span data-i18n="nav_logout">लॉगआउट करें</span>
       </button>
     </div>
   </nav>
@@ -2025,11 +2025,32 @@
     <div id="settingsPage" class="page">
       <div class="page-header">
         <div>
-          <h1>⚙️ सेटिंग्स (Settings)</h1>
-          <p>Dashboard configuration</p>
+          <h1>⚙️ <span data-i18n="nav_settings">सेटिंग्स (Settings)</span></h1>
+          <p data-i18n="settings_subtitle">Dashboard configuration</p>
         </div>
       </div>
       <div class="settings-content">
+        <div class="settings-section">
+          <h3>🌐 <span data-i18n="lang_title">Language / भाषा</span></h3>
+          <p style="font-size:13px;color:#6b7280;margin-bottom:12px;" data-i18n="lang_desc">Choose your preferred language for the dashboard interface.</p>
+          <div class="settings-row">
+            <div>
+              <label data-i18n="lang_select_label">Interface Language</label>
+              <p data-i18n="lang_select_hint">Changes sidebar and common UI labels</p>
+            </div>
+            <select id="languageSelector" class="form-control" style="width:200px;" onchange="setLanguage(this.value)">
+              <option value="en">🇬🇧 English</option>
+              <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+              <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
+              <option value="mr">🇮🇳 मराठी (Marathi)</option>
+              <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+              <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+              <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+              <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+              <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+            </select>
+          </div>
+        </div>
         <div class="settings-section">
           <h3>🔗 Webhook Integration</h3>
           <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">
@@ -2400,6 +2421,9 @@ function showApp() {
   } else {
     avatarEl.textContent = displayName[0].toUpperCase();
   }
+
+  // Apply saved language preference
+  applyLanguage(localStorage.getItem('dashboardLang') || 'hi');
 
   // Load initial data
   loadConversations();
@@ -5456,6 +5480,173 @@ async function importBookingsCSV(input) {
 
   showToast(`✅ Import done: ${success} saved${failed ? ', ' + failed + ' failed' : ''}`, 'success');
   loadBookings();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LANGUAGE / i18n
+// ═══════════════════════════════════════════════════════════
+const TRANSLATIONS = {
+  en: {
+    nav_conversations: 'Conversations',
+    nav_leads: 'Leads',
+    nav_reports: 'Reports',
+    nav_campaigns: 'Campaigns',
+    nav_pricing: 'Pricing',
+    nav_bookings: 'Bookings',
+    nav_vendors: 'Vendors',
+    nav_settings: 'Settings',
+    nav_logout: 'Logout',
+    lang_title: 'Language',
+    lang_desc: 'Choose your preferred language for the dashboard interface.',
+    lang_select_label: 'Interface Language',
+    lang_select_hint: 'Changes sidebar and common UI labels',
+    settings_subtitle: 'Dashboard configuration',
+  },
+  hi: {
+    nav_conversations: 'बातचीत (Conversations)',
+    nav_leads: 'लीड्स (Leads)',
+    nav_reports: 'रिपोर्ट (Reports)',
+    nav_campaigns: 'अभियान (Campaigns)',
+    nav_pricing: 'प्राइसिंग (Pricing)',
+    nav_bookings: 'बुकिंग्स (Bookings)',
+    nav_vendors: 'वेंडर्स (Vendors)',
+    nav_settings: 'सेटिंग्स (Settings)',
+    nav_logout: 'लॉगआउट करें',
+    lang_title: 'Language / भाषा',
+    lang_desc: 'Dashboard के लिए अपनी पसंदीदा भाषा चुनें।',
+    lang_select_label: 'इंटरफ़ेस भाषा',
+    lang_select_hint: 'साइडबार और UI लेबल बदलता है',
+    settings_subtitle: 'Dashboard कॉन्फ़िगरेशन',
+  },
+  gu: {
+    nav_conversations: 'વાર્તાલાપ (Conversations)',
+    nav_leads: 'લીડ્સ (Leads)',
+    nav_reports: 'અહેવાલ (Reports)',
+    nav_campaigns: 'અભિયાન (Campaigns)',
+    nav_pricing: 'કિંમત (Pricing)',
+    nav_bookings: 'બુકિંગ (Bookings)',
+    nav_vendors: 'વેન્ડર (Vendors)',
+    nav_settings: 'સેટિંગ્સ (Settings)',
+    nav_logout: 'લૉગઆઉટ કરો',
+    lang_title: 'Language / ભાષા',
+    lang_desc: 'Dashboard માટે તમારી પસંદીદા ભાષા પસંદ કરો.',
+    lang_select_label: 'ઇન્ટરફેસ ભાષા',
+    lang_select_hint: 'Sidebar અને UI લેબલ બદલે છે',
+    settings_subtitle: 'Dashboard રૂપરેખાંકન',
+  },
+  mr: {
+    nav_conversations: 'संभाषण (Conversations)',
+    nav_leads: 'लीड्स (Leads)',
+    nav_reports: 'अहवाल (Reports)',
+    nav_campaigns: 'मोहीम (Campaigns)',
+    nav_pricing: 'किंमत (Pricing)',
+    nav_bookings: 'बुकिंग (Bookings)',
+    nav_vendors: 'विक्रेते (Vendors)',
+    nav_settings: 'सेटिंग्ज (Settings)',
+    nav_logout: 'लॉगआउट करा',
+    lang_title: 'Language / भाषा',
+    lang_desc: 'Dashboard साठी तुमची पसंतीची भाषा निवडा.',
+    lang_select_label: 'इंटरफेस भाषा',
+    lang_select_hint: 'Sidebar आणि UI लेबले बदलते',
+    settings_subtitle: 'Dashboard कॉन्फिगरेशन',
+  },
+  bn: {
+    nav_conversations: 'কথোপকথন (Conversations)',
+    nav_leads: 'লিড (Leads)',
+    nav_reports: 'প্রতিবেদন (Reports)',
+    nav_campaigns: 'প্রচারণা (Campaigns)',
+    nav_pricing: 'মূল্য নির্ধারণ (Pricing)',
+    nav_bookings: 'বুকিং (Bookings)',
+    nav_vendors: 'বিক্রেতা (Vendors)',
+    nav_settings: 'সেটিংস (Settings)',
+    nav_logout: 'লগআউট করুন',
+    lang_title: 'Language / ভাষা',
+    lang_desc: 'Dashboard-এর জন্য আপনার পছন্দের ভাষা বেছে নিন।',
+    lang_select_label: 'ইন্টারফেস ভাষা',
+    lang_select_hint: 'Sidebar এবং UI লেবেল পরিবর্তন করে',
+    settings_subtitle: 'Dashboard কনফিগারেশন',
+  },
+  ta: {
+    nav_conversations: 'உரையாடல்கள் (Conversations)',
+    nav_leads: 'லீட்கள் (Leads)',
+    nav_reports: 'அறிக்கைகள் (Reports)',
+    nav_campaigns: 'பிரச்சாரங்கள் (Campaigns)',
+    nav_pricing: 'விலை நிர்ணயம் (Pricing)',
+    nav_bookings: 'முன்பதிவுகள் (Bookings)',
+    nav_vendors: 'விற்பனையாளர்கள் (Vendors)',
+    nav_settings: 'அமைப்புகள் (Settings)',
+    nav_logout: 'வெளியேறு',
+    lang_title: 'Language / மொழி',
+    lang_desc: 'Dashboard-க்கான உங்கள் விருப்பமான மொழியை தேர்வு செய்யுங்கள்.',
+    lang_select_label: 'இடைமுக மொழி',
+    lang_select_hint: 'Sidebar மற்றும் UI லேபல்களை மாற்றுகிறது',
+    settings_subtitle: 'Dashboard கட்டமைப்பு',
+  },
+  te: {
+    nav_conversations: 'సంభాషణలు (Conversations)',
+    nav_leads: 'లీడ్స్ (Leads)',
+    nav_reports: 'నివేదికలు (Reports)',
+    nav_campaigns: 'ప్రచారాలు (Campaigns)',
+    nav_pricing: 'ధర నిర్ణయం (Pricing)',
+    nav_bookings: 'బుకింగ్‌లు (Bookings)',
+    nav_vendors: 'విక్రేతలు (Vendors)',
+    nav_settings: 'సెట్టింగ్‌లు (Settings)',
+    nav_logout: 'లాగ్ అవుట్',
+    lang_title: 'Language / భాష',
+    lang_desc: 'Dashboard కోసం మీకు నచ్చిన భాషను ఎంచుకోండి.',
+    lang_select_label: 'ఇంటర్‌ఫేస్ భాష',
+    lang_select_hint: 'Sidebar మరియు UI లేబుల్‌లను మారుస్తుంది',
+    settings_subtitle: 'Dashboard కాన్ఫిగరేషన్',
+  },
+  kn: {
+    nav_conversations: 'ಸಂಭಾಷಣೆಗಳು (Conversations)',
+    nav_leads: 'ಲೀಡ್ಸ್ (Leads)',
+    nav_reports: 'ವರದಿಗಳು (Reports)',
+    nav_campaigns: 'ಪ್ರಚಾರಗಳು (Campaigns)',
+    nav_pricing: 'ಬೆಲೆ ನಿರ್ಧಾರ (Pricing)',
+    nav_bookings: 'ಬುಕಿಂಗ್‌ಗಳು (Bookings)',
+    nav_vendors: 'ಮಾರಾಟಗಾರರು (Vendors)',
+    nav_settings: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು (Settings)',
+    nav_logout: 'ಲಾಗ್ ಔಟ್',
+    lang_title: 'Language / ಭಾಷೆ',
+    lang_desc: 'Dashboard ಗಾಗಿ ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆರಿಸಿ.',
+    lang_select_label: 'ಇಂಟರ್‌ಫೇಸ್ ಭಾಷೆ',
+    lang_select_hint: 'Sidebar ಮತ್ತು UI ಲೇಬಲ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತದೆ',
+    settings_subtitle: 'Dashboard ಕಾನ್ಫಿಗರೇಶನ್',
+  },
+  pa: {
+    nav_conversations: 'ਗੱਲਬਾਤ (Conversations)',
+    nav_leads: 'ਲੀਡਸ (Leads)',
+    nav_reports: 'ਰਿਪੋਰਟਾਂ (Reports)',
+    nav_campaigns: 'ਮੁਹਿੰਮਾਂ (Campaigns)',
+    nav_pricing: 'ਕੀਮਤ ਨਿਰਧਾਰਨ (Pricing)',
+    nav_bookings: 'ਬੁਕਿੰਗਾਂ (Bookings)',
+    nav_vendors: 'ਵਿਕ੍ਰੇਤਾ (Vendors)',
+    nav_settings: 'ਸੈਟਿੰਗਾਂ (Settings)',
+    nav_logout: 'ਲੌਗਆਉਟ ਕਰੋ',
+    lang_title: 'Language / ਭਾਸ਼ਾ',
+    lang_desc: 'Dashboard ਲਈ ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਚੁਣੋ।',
+    lang_select_label: 'ਇੰਟਰਫੇਸ ਭਾਸ਼ਾ',
+    lang_select_hint: 'Sidebar ਅਤੇ UI ਲੇਬਲ ਬਦਲਦਾ ਹੈ',
+    settings_subtitle: 'Dashboard ਕੌਨਫਿਗਰੇਸ਼ਨ',
+  },
+};
+
+function applyLanguage(lang) {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS['hi'];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+  document.documentElement.lang = lang;
+  const sel = document.getElementById('languageSelector');
+  if (sel) sel.value = lang;
+}
+
+function setLanguage(lang) {
+  localStorage.setItem('dashboardLang', lang);
+  applyLanguage(lang);
+  showToast('✅ Language updated', 'success');
 }
 </script>
 </body>
