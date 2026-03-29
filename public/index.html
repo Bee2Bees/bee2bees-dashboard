@@ -1222,10 +1222,10 @@
       <!-- Left: conversation list -->
       <div class="conv-list-panel">
         <div class="conv-list-header">
-          <h2>💬 बातचीत (Conversations)</h2>
-          <input type="text" class="conv-search" id="convSearch" placeholder="🔍 खोजें... (Search)" oninput="filterConversations()">
+          <h2>💬 <span data-i18n="conv_title">बातचीत (Conversations)</span></h2>
+          <input type="text" class="conv-search" id="convSearch" placeholder="🔍 खोजें... (Search)" data-i18n-placeholder="search_ph" oninput="filterConversations()">
           <div class="conv-filters">
-            <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">सभी</button>
+            <button class="filter-btn active" data-filter="all" onclick="setFilter(this)" data-i18n="filter_all">सभी</button>
             <button class="filter-btn" data-filter="bot" onclick="setFilter(this)">🤖 Bot</button>
             <button class="filter-btn" data-filter="human" onclick="setFilter(this)">👤 Team</button>
             <button class="filter-btn" data-filter="resolved" onclick="setFilter(this)">✅ Done</button>
@@ -1267,12 +1267,12 @@
           <div class="crm-stat-item">
             <div class="crm-stat-val" id="statPeriodCount">-</div>
             <div class="crm-stat-lbl">
-              पूछताछ
+              <span data-i18n="stat_queries">पूछताछ</span>
               <div style="display:flex;gap:4px;margin-top:5px;">
-                <button class="period-btn active" data-period="today" onclick="switchStatPeriod(this)">आज</button>
-                <button class="period-btn" data-period="week" onclick="switchStatPeriod(this)">हफ्ता</button>
-                <button class="period-btn" data-period="month" onclick="switchStatPeriod(this)">महीना</button>
-                <button class="period-btn" data-period="year" onclick="switchStatPeriod(this)">साल</button>
+                <button class="period-btn active" data-period="today" onclick="switchStatPeriod(this)" data-i18n="period_today">आज</button>
+                <button class="period-btn" data-period="week" onclick="switchStatPeriod(this)" data-i18n="period_week">हफ्ता</button>
+                <button class="period-btn" data-period="month" onclick="switchStatPeriod(this)" data-i18n="period_month">महीना</button>
+                <button class="period-btn" data-period="year" onclick="switchStatPeriod(this)" data-i18n="period_year">साल</button>
               </div>
             </div>
           </div>
@@ -1290,20 +1290,20 @@
         <!-- Toolbar -->
         <div class="kanban-toolbar">
           <input type="text" id="leadSearch" class="conv-search" style="width:180px;"
-            placeholder="🔍 खोजें..." oninput="debounceLoadLeads()">
+            placeholder="🔍 खोजें..." data-i18n-placeholder="search_ph" oninput="debounceLoadLeads()">
           <select id="stageFilter" class="form-control" style="width:160px;font-size:12px;" onchange="loadLeads()">
-            <option value="">📋 सभी Stages</option>
-            <option value="new_query">📩 नई पूछताछ</option>
-            <option value="quote_sent">💬 कोटेशन भेजा</option>
-            <option value="changes_requested">🔄 बदलाव चाहिए</option>
-            <option value="follow_up">📞 फॉलो अप</option>
-            <option value="booking_confirmed">✅ बुकिंग कन्फर्म</option>
-            <option value="advance_received">💰 एडवांस मिला</option>
-            <option value="voucher_sent">🎫 वाउचर भेजा</option>
-            <option value="completed">🏁 पूरा हुआ</option>
-            <option value="lost">❌ नहीं बना</option>
+            <option value="" data-i18n="stage_all">📋 सभी Stages</option>
+            <option value="new_query" data-i18n="stage_new_query">📩 नई पूछताछ</option>
+            <option value="quote_sent" data-i18n="stage_quote_sent">💬 कोटेशन भेजा</option>
+            <option value="changes_requested" data-i18n="stage_changes">🔄 बदलाव चाहिए</option>
+            <option value="follow_up" data-i18n="stage_follow_up">📞 फॉलो अप</option>
+            <option value="booking_confirmed" data-i18n="stage_booking_confirmed">✅ बुकिंग कन्फर्म</option>
+            <option value="advance_received" data-i18n="stage_advance">💰 एडवांस मिला</option>
+            <option value="voucher_sent" data-i18n="stage_voucher">🎫 वाउचर भेजा</option>
+            <option value="completed" data-i18n="stage_completed">🏁 पूरा हुआ</option>
+            <option value="lost" data-i18n="stage_lost">❌ नहीं बना</option>
           </select>
-          <button class="btn btn-primary btn-sm" onclick="openNewLeadModal()">+ नई लीड</button>
+          <button class="btn btn-primary btn-sm" onclick="openNewLeadModal()" data-i18n="btn_new_lead">+ नई लीड</button>
           <button class="btn btn-secondary btn-sm" onclick="loadLeads()">🔄</button>
           <span id="leadTotalCount" style="font-size:12px;color:#6b7280;margin-left:auto;"></span>
         </div>
@@ -1360,18 +1360,18 @@
     <div id="campaignsPage" class="page">
       <div class="page-header">
         <div>
-          <h1>📢 अभियान (Campaigns)</h1>
-          <p>WhatsApp broadcast campaigns और contacts manage करें</p>
+          <h1>📢 <span data-i18n="camp_title">अभियान (Campaigns)</span></h1>
+          <p data-i18n="camp_subtitle">WhatsApp broadcast campaigns और contacts manage करें</p>
         </div>
       </div>
 
       <!-- Tabs -->
       <div style="background:#fff; border-bottom:1px solid #e4e7ec; padding:0 24px; flex-shrink:0;">
         <div style="display:flex; gap:0;">
-          <button class="camp-tab active" data-tab="contacts" onclick="switchCampTab(this)">
+          <button class="camp-tab active" data-tab="contacts" onclick="switchCampTab(this)" data-i18n="camp_tab_contacts">
             👥 संपर्क (Contacts)
           </button>
-          <button class="camp-tab" data-tab="campaigns-list" onclick="switchCampTab(this)">
+          <button class="camp-tab" data-tab="campaigns-list" onclick="switchCampTab(this)" data-i18n="camp_tab_campaigns">
             📢 अभियान (Campaigns)
           </button>
         </div>
@@ -1382,9 +1382,9 @@
         <!-- Contacts toolbar -->
         <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
           <input type="text" id="contactSearch" class="conv-search" style="width:240px;"
-            placeholder="🔍 नाम, फोन, कंपनी..." oninput="filterContacts()">
+            placeholder="🔍 नाम, फोन, कंपनी..." data-i18n-placeholder="contact_search_ph" oninput="filterContacts()">
           <select id="contactSourceFilter" class="form-control" style="width:160px;" onchange="filterContacts()">
-            <option value="">सभी Sources</option>
+            <option value="" data-i18n="all_sources">सभी Sources</option>
           </select>
           <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin-bottom:0;">
             📥 Excel/CSV Upload
@@ -1403,7 +1403,7 @@
                 <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec; width:32px;">
                   <input type="checkbox" id="selectAllContacts" onchange="toggleSelectAll(this)">
                 </th>
-                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">नाम (Name)</th>
+                <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;" data-i18n="col_name">नाम (Name)</th>
                 <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">📱 Phone</th>
                 <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">🏢 Company</th>
                 <th style="padding:10px 12px; border-bottom:1px solid #e4e7ec;">🏙️ City</th>
@@ -1421,8 +1421,8 @@
       <!-- Campaigns List Tab -->
       <div id="campTab-campaigns-list" class="camp-tab-content hidden" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
         <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-shrink:0;">
-          <button class="btn btn-primary" onclick="openNewCampaignModal()">+ नया अभियान बनाएं</button>
-          <button class="btn btn-secondary btn-sm" onclick="loadCampaigns()">🔄 रिफ्रेश</button>
+          <button class="btn btn-primary" onclick="openNewCampaignModal()" data-i18n="btn_new_campaign">+ नया अभियान बनाएं</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadCampaigns()" data-i18n="btn_refresh">🔄 रिफ्रेश</button>
         </div>
         <div style="flex:1; overflow-y:auto; padding:20px;">
           <div id="campaignsList">
@@ -1436,15 +1436,15 @@
     <div id="bookingsPage" class="page">
       <div class="page-header">
         <div>
-          <h1>📋 कन्फर्म्ड बुकिंग्स</h1>
-          <p>सभी confirmed bookings देखें और manage करें</p>
+          <h1>📋 <span data-i18n="bookings_title">कन्फर्म्ड बुकिंग्स</span></h1>
+          <p data-i18n="bookings_subtitle">सभी confirmed bookings देखें और manage करें</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button class="btn btn-secondary" onclick="exportBookingsCSV()" title="Export to CSV">📤 Export</button>
           <label class="btn btn-secondary" style="cursor:pointer;margin:0;" title="Import from CSV">
             📥 Import <input type="file" id="bkImportFile" accept=".csv" style="display:none;" onchange="importBookingsCSV(this)">
           </label>
-          <button class="btn btn-primary" onclick="openBookingForm()">+ नई बुकिंग</button>
+          <button class="btn btn-primary" onclick="openBookingForm()" data-i18n="btn_new_booking">+ नई बुकिंग</button>
         </div>
       </div>
 
@@ -1452,7 +1452,7 @@
       <div style="padding:12px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
         <input type="text" id="bookingSearch" class="conv-search" style="width:200px;" placeholder="🔍 Serial, Agent, Customer..." oninput="loadBookings()">
         <select id="bookingStatusFilter" class="form-control" style="width:140px;" onchange="loadBookings()">
-          <option value="">📊 सभी Status</option>
+          <option value="" data-i18n="all_status">📊 सभी Status</option>
           <option value="Confirmed">✅ Confirmed</option>
           <option value="On Hold">⏳ On Hold</option>
           <option value="Cancelled">❌ Cancelled</option>
@@ -1463,13 +1463,13 @@
           <option value="B2C">👤 B2C</option>
         </select>
         <select id="bookingDestFilter" class="form-control" style="width:140px;" onchange="loadBookings()">
-          <option value="">🗺️ सभी Destinations</option>
+          <option value="" data-i18n="all_destinations">🗺️ सभी Destinations</option>
           <option value="Goa">🏖️ Goa</option>
           <option value="Himachal">🏔️ Himachal</option>
           <option value="Other">📍 Other</option>
         </select>
         <select id="bookingAssignedFilter" class="form-control" style="width:130px;" onchange="loadBookings()">
-          <option value="">👤 सभी Staff</option>
+          <option value="" data-i18n="all_staff">👤 सभी Staff</option>
           <option value="Tara">Tara</option>
           <option value="Sachin">Sachin</option>
           <option value="Jyoti">Jyoti</option>
@@ -1778,8 +1778,8 @@
     <div id="pricingPage" class="page">
       <div class="page-header">
         <div>
-          <h1>💰 प्राइसिंग (Pricing)</h1>
-          <p>Hotels, Activities और Transfers की pricing Google Sheets से sync करें</p>
+          <h1>💰 <span data-i18n="pricing_title">प्राइसिंग (Pricing)</span></h1>
+          <p data-i18n="pricing_subtitle">Hotels, Activities और Transfers की pricing Google Sheets से sync करें</p>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
           <span id="pricingLastSync" style="font-size:12px; color:#6b7280;"></span>
@@ -1802,13 +1802,13 @@
         <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e4e7ec; display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
           <input type="text" id="hotelSearch" class="conv-search" style="width:240px;" placeholder="🔍 Hotel search..." oninput="loadHotels()">
           <select id="hotelStarFilter" class="form-control" style="width:140px;" onchange="loadHotels()">
-            <option value="">⭐ सभी Star</option>
+            <option value="" data-i18n="all_star">⭐ सभी Star</option>
             <option value="3 Star">3 Star</option>
             <option value="4 Star">4 Star</option>
             <option value="5 Star">5 Star</option>
           </select>
           <select id="hotelCategoryFilter" class="form-control" style="width:160px;" onchange="loadHotels()">
-            <option value="">📁 सभी Category</option>
+            <option value="" data-i18n="all_category">📁 सभी Category</option>
             <option value="Standard">Standard</option>
             <option value="Deluxe">Deluxe</option>
             <option value="Premium">Premium</option>
@@ -1913,11 +1913,11 @@
     <div id="vendorsPage" class="page">
       <div class="page-header">
         <div>
-          <h1>🏪 वेंडर्स (Vendors)</h1>
-          <p>Vendor master list manage करें</p>
+          <h1>🏪 <span data-i18n="vendors_title">वेंडर्स (Vendors)</span></h1>
+          <p data-i18n="vendors_subtitle">Vendor master list manage करें</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn btn-primary" onclick="openVendorForm()">+ नया Vendor</button>
+          <button class="btn btn-primary" onclick="openVendorForm()" data-i18n="btn_new_vendor">+ नया Vendor</button>
           <button class="btn btn-secondary btn-sm" onclick="loadVendors()">🔄</button>
         </div>
       </div>
@@ -1926,7 +1926,7 @@
       <div style="padding:12px 20px;background:#fff;border-bottom:1px solid #e4e7ec;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
         <input type="text" id="vendorSearch" class="conv-search" style="width:200px;" placeholder="🔍 Search vendor..." oninput="loadVendors()">
         <select id="vendorCategoryFilter" class="form-control" style="width:160px;" onchange="loadVendors()">
-          <option value="">📁 सभी Categories</option>
+          <option value="" data-i18n="all_categories">📁 सभी Categories</option>
           <option value="hotel">🏨 Hotel</option>
           <option value="transport">🚗 Transport</option>
           <option value="activity">🎯 Activity</option>
@@ -5513,148 +5513,246 @@ async function importBookingsCSV(input) {
 // ═══════════════════════════════════════════════════════════
 const TRANSLATIONS = {
   en: {
-    nav_conversations: 'Conversations',
-    nav_leads: 'Leads',
-    nav_reports: 'Reports',
-    nav_campaigns: 'Campaigns',
-    nav_pricing: 'Pricing',
-    nav_bookings: 'Bookings',
-    nav_vendors: 'Vendors',
-    nav_settings: 'Settings',
-    nav_logout: 'Logout',
-    lang_title: 'Language',
-    lang_desc: 'Choose your preferred language for the dashboard interface.',
-    lang_select_label: 'Interface Language',
-    lang_select_hint: 'Changes sidebar and common UI labels',
+    // Nav
+    nav_conversations: 'Conversations', nav_leads: 'Leads', nav_reports: 'Reports',
+    nav_campaigns: 'Campaigns', nav_pricing: 'Pricing', nav_bookings: 'Bookings',
+    nav_vendors: 'Vendors', nav_settings: 'Settings', nav_logout: 'Logout',
+    // Settings
+    lang_title: 'Language', lang_desc: 'Choose your preferred language for the dashboard interface.',
+    lang_select_label: 'Interface Language', lang_select_hint: 'Changes sidebar and common UI labels',
     settings_subtitle: 'Dashboard configuration',
+    // Conversations
+    conv_title: 'Conversations', search_ph: 'Search...', filter_all: 'All',
+    // Leads
+    stat_queries: 'Queries', period_today: 'Today', period_week: 'Week', period_month: 'Month', period_year: 'Year',
+    btn_new_lead: '+ New Lead',
+    stage_all: '📋 All Stages', stage_new_query: '📩 New Query', stage_quote_sent: '💬 Quote Sent',
+    stage_changes: '🔄 Changes Requested', stage_follow_up: '📞 Follow Up',
+    stage_booking_confirmed: '✅ Booking Confirmed', stage_advance: '💰 Advance Received',
+    stage_voucher: '🎫 Voucher Sent', stage_completed: '🏁 Completed', stage_lost: '❌ Lost',
+    // Campaigns
+    camp_title: 'Campaigns', camp_subtitle: 'Manage WhatsApp broadcast campaigns and contacts',
+    camp_tab_contacts: '👥 Contacts', camp_tab_campaigns: '📢 Campaigns',
+    contact_search_ph: 'Name, phone, company...', all_sources: 'All Sources',
+    col_name: 'Name', btn_new_campaign: '+ New Campaign', btn_refresh: '🔄 Refresh',
+    // Bookings
+    bookings_title: 'Confirmed Bookings', bookings_subtitle: 'View and manage all confirmed bookings',
+    btn_new_booking: '+ New Booking', all_status: '📊 All Status',
+    all_destinations: '🗺️ All Destinations', all_staff: '👤 All Staff',
+    // Pricing
+    pricing_title: 'Pricing', pricing_subtitle: 'Sync hotel, activity and transfer pricing from Google Sheets',
+    all_star: '⭐ All Stars', all_category: '📁 All Categories',
+    // Vendors
+    vendors_title: 'Vendors', vendors_subtitle: 'Manage vendor master list',
+    btn_new_vendor: '+ New Vendor', all_categories: '📁 All Categories',
   },
   hi: {
-    nav_conversations: 'बातचीत (Conversations)',
-    nav_leads: 'लीड्स (Leads)',
-    nav_reports: 'रिपोर्ट (Reports)',
-    nav_campaigns: 'अभियान (Campaigns)',
-    nav_pricing: 'प्राइसिंग (Pricing)',
-    nav_bookings: 'बुकिंग्स (Bookings)',
-    nav_vendors: 'वेंडर्स (Vendors)',
-    nav_settings: 'सेटिंग्स (Settings)',
-    nav_logout: 'लॉगआउट करें',
-    lang_title: 'Language / भाषा',
-    lang_desc: 'Dashboard के लिए अपनी पसंदीदा भाषा चुनें।',
-    lang_select_label: 'इंटरफ़ेस भाषा',
-    lang_select_hint: 'साइडबार और UI लेबल बदलता है',
+    nav_conversations: 'बातचीत', nav_leads: 'लीड्स', nav_reports: 'रिपोर्ट',
+    nav_campaigns: 'अभियान', nav_pricing: 'प्राइसिंग', nav_bookings: 'बुकिंग्स',
+    nav_vendors: 'वेंडर्स', nav_settings: 'सेटिंग्स', nav_logout: 'लॉगआउट करें',
+    lang_title: 'Language / भाषा', lang_desc: 'Dashboard के लिए अपनी पसंदीदा भाषा चुनें।',
+    lang_select_label: 'इंटरफ़ेस भाषा', lang_select_hint: 'साइडबार और UI लेबल बदलता है',
     settings_subtitle: 'Dashboard कॉन्फ़िगरेशन',
+    conv_title: 'बातचीत (Conversations)', search_ph: 'खोजें...', filter_all: 'सभी',
+    stat_queries: 'पूछताछ', period_today: 'आज', period_week: 'हफ्ता', period_month: 'महीना', period_year: 'साल',
+    btn_new_lead: '+ नई लीड',
+    stage_all: '📋 सभी Stages', stage_new_query: '📩 नई पूछताछ', stage_quote_sent: '💬 कोटेशन भेजा',
+    stage_changes: '🔄 बदलाव चाहिए', stage_follow_up: '📞 फॉलो अप',
+    stage_booking_confirmed: '✅ बुकिंग कन्फर्म', stage_advance: '💰 एडवांस मिला',
+    stage_voucher: '🎫 वाउचर भेजा', stage_completed: '🏁 पूरा हुआ', stage_lost: '❌ नहीं बना',
+    camp_title: 'अभियान (Campaigns)', camp_subtitle: 'WhatsApp broadcast campaigns और contacts manage करें',
+    camp_tab_contacts: '👥 संपर्क (Contacts)', camp_tab_campaigns: '📢 अभियान (Campaigns)',
+    contact_search_ph: 'नाम, फोन, कंपनी...', all_sources: 'सभी Sources',
+    col_name: 'नाम (Name)', btn_new_campaign: '+ नया अभियान बनाएं', btn_refresh: '🔄 रिफ्रेश',
+    bookings_title: 'कन्फर्म्ड बुकिंग्स', bookings_subtitle: 'सभी confirmed bookings देखें और manage करें',
+    btn_new_booking: '+ नई बुकिंग', all_status: '📊 सभी Status',
+    all_destinations: '🗺️ सभी Destinations', all_staff: '👤 सभी Staff',
+    pricing_title: 'प्राइसिंग (Pricing)', pricing_subtitle: 'Hotels, Activities और Transfers की pricing Google Sheets से sync करें',
+    all_star: '⭐ सभी Star', all_category: '📁 सभी Category',
+    vendors_title: 'वेंडर्स (Vendors)', vendors_subtitle: 'Vendor master list manage करें',
+    btn_new_vendor: '+ नया Vendor', all_categories: '📁 सभी Categories',
   },
   gu: {
-    nav_conversations: 'વાર્તાલાપ (Conversations)',
-    nav_leads: 'લીડ્સ (Leads)',
-    nav_reports: 'અહેવાલ (Reports)',
-    nav_campaigns: 'અભિયાન (Campaigns)',
-    nav_pricing: 'કિંમત (Pricing)',
-    nav_bookings: 'બુકિંગ (Bookings)',
-    nav_vendors: 'વેન્ડર (Vendors)',
-    nav_settings: 'સેટિંગ્સ (Settings)',
-    nav_logout: 'લૉગઆઉટ કરો',
-    lang_title: 'Language / ભાષા',
-    lang_desc: 'Dashboard માટે તમારી પસંદીદા ભાષા પસંદ કરો.',
-    lang_select_label: 'ઇન્ટરફેસ ભાષા',
-    lang_select_hint: 'Sidebar અને UI લેબલ બદલે છે',
+    nav_conversations: 'વાર્તાલાપ', nav_leads: 'લીડ્સ', nav_reports: 'અહેવાલ',
+    nav_campaigns: 'અભિયાન', nav_pricing: 'કિંમત', nav_bookings: 'બુકિંગ',
+    nav_vendors: 'વેન્ડર', nav_settings: 'સેટિંગ્સ', nav_logout: 'લૉગઆઉટ કરો',
+    lang_title: 'Language / ભાષા', lang_desc: 'Dashboard માટે તમારી પસંદીદા ભાષા પસંદ કરો.',
+    lang_select_label: 'ઇન્ટરફેસ ભાષા', lang_select_hint: 'Sidebar અને UI લેબલ બદલે છે',
     settings_subtitle: 'Dashboard રૂપરેખાંકન',
+    conv_title: 'વાર્તાલાપ (Conversations)', search_ph: 'શોધો...', filter_all: 'બધા',
+    stat_queries: 'પૂછપરછ', period_today: 'આજ', period_week: 'અઠવાડિયું', period_month: 'મહિનો', period_year: 'વર્ષ',
+    btn_new_lead: '+ નવી લીડ',
+    stage_all: '📋 બધા Stages', stage_new_query: '📩 નવી પૂછપરછ', stage_quote_sent: '💬 કોટેશન મોકલ્યું',
+    stage_changes: '🔄 ફેરફાર જોઈએ', stage_follow_up: '📞 ફૉલો અપ',
+    stage_booking_confirmed: '✅ બુકિંગ કન્ફર્મ', stage_advance: '💰 એડવાન્સ મળ્યો',
+    stage_voucher: '🎫 વાઉચર મોકલ્યો', stage_completed: '🏁 પૂર્ણ', stage_lost: '❌ નહીં બન્યું',
+    camp_title: 'અભિયાન (Campaigns)', camp_subtitle: 'WhatsApp broadcast campaigns અને contacts manage કરો',
+    camp_tab_contacts: '👥 સંપર્ક (Contacts)', camp_tab_campaigns: '📢 અભિયાન (Campaigns)',
+    contact_search_ph: 'નામ, ફોન, કંપની...', all_sources: 'બધા Sources',
+    col_name: 'નામ (Name)', btn_new_campaign: '+ નવું અભિયાન', btn_refresh: '🔄 રિફ્રેશ',
+    bookings_title: 'કન્ફર્મ્ડ બુકિંગ', bookings_subtitle: 'બધી confirmed bookings જુઓ અને manage કરો',
+    btn_new_booking: '+ નવી બુકિંગ', all_status: '📊 બધા Status',
+    all_destinations: '🗺️ બધા Destinations', all_staff: '👤 બધો Staff',
+    pricing_title: 'કિંમત (Pricing)', pricing_subtitle: 'Google Sheets થી pricing sync કરો',
+    all_star: '⭐ બધા Star', all_category: '📁 બધી Category',
+    vendors_title: 'વેન્ડર (Vendors)', vendors_subtitle: 'Vendor master list manage કરો',
+    btn_new_vendor: '+ નવો Vendor', all_categories: '📁 બધી Categories',
   },
   mr: {
-    nav_conversations: 'संभाषण (Conversations)',
-    nav_leads: 'लीड्स (Leads)',
-    nav_reports: 'अहवाल (Reports)',
-    nav_campaigns: 'मोहीम (Campaigns)',
-    nav_pricing: 'किंमत (Pricing)',
-    nav_bookings: 'बुकिंग (Bookings)',
-    nav_vendors: 'विक्रेते (Vendors)',
-    nav_settings: 'सेटिंग्ज (Settings)',
-    nav_logout: 'लॉगआउट करा',
-    lang_title: 'Language / भाषा',
-    lang_desc: 'Dashboard साठी तुमची पसंतीची भाषा निवडा.',
-    lang_select_label: 'इंटरफेस भाषा',
-    lang_select_hint: 'Sidebar आणि UI लेबले बदलते',
+    nav_conversations: 'संभाषण', nav_leads: 'लीड्स', nav_reports: 'अहवाल',
+    nav_campaigns: 'मोहीम', nav_pricing: 'किंमत', nav_bookings: 'बुकिंग',
+    nav_vendors: 'विक्रेते', nav_settings: 'सेटिंग्ज', nav_logout: 'लॉगआउट करा',
+    lang_title: 'Language / भाषा', lang_desc: 'Dashboard साठी तुमची पसंतीची भाषा निवडा.',
+    lang_select_label: 'इंटरफेस भाषा', lang_select_hint: 'Sidebar आणि UI लेबले बदलते',
     settings_subtitle: 'Dashboard कॉन्फिगरेशन',
+    conv_title: 'संभाषण (Conversations)', search_ph: 'शोधा...', filter_all: 'सर्व',
+    stat_queries: 'चौकश्या', period_today: 'आज', period_week: 'आठवडा', period_month: 'महिना', period_year: 'वर्ष',
+    btn_new_lead: '+ नवीन लीड',
+    stage_all: '📋 सर्व Stages', stage_new_query: '📩 नवीन चौकशी', stage_quote_sent: '💬 कोटेशन पाठवले',
+    stage_changes: '🔄 बदल हवे', stage_follow_up: '📞 फॉलो अप',
+    stage_booking_confirmed: '✅ बुकिंग कन्फर्म', stage_advance: '💰 अॅडव्हान्स मिळाला',
+    stage_voucher: '🎫 व्हाउचर पाठवले', stage_completed: '🏁 पूर्ण', stage_lost: '❌ झाले नाही',
+    camp_title: 'मोहीम (Campaigns)', camp_subtitle: 'WhatsApp broadcast campaigns आणि contacts manage करा',
+    camp_tab_contacts: '👥 संपर्क (Contacts)', camp_tab_campaigns: '📢 मोहीम (Campaigns)',
+    contact_search_ph: 'नाव, फोन, कंपनी...', all_sources: 'सर्व Sources',
+    col_name: 'नाव (Name)', btn_new_campaign: '+ नवीन मोहीम', btn_refresh: '🔄 रिफ्रेश',
+    bookings_title: 'कन्फर्म्ड बुकिंग', bookings_subtitle: 'सर्व confirmed bookings पहा आणि manage करा',
+    btn_new_booking: '+ नवीन बुकिंग', all_status: '📊 सर्व Status',
+    all_destinations: '🗺️ सर्व Destinations', all_staff: '👤 सर्व Staff',
+    pricing_title: 'किंमत (Pricing)', pricing_subtitle: 'Google Sheets मधून pricing sync करा',
+    all_star: '⭐ सर्व Star', all_category: '📁 सर्व Category',
+    vendors_title: 'विक्रेते (Vendors)', vendors_subtitle: 'Vendor master list manage करा',
+    btn_new_vendor: '+ नवीन Vendor', all_categories: '📁 सर्व Categories',
   },
   bn: {
-    nav_conversations: 'কথোপকথন (Conversations)',
-    nav_leads: 'লিড (Leads)',
-    nav_reports: 'প্রতিবেদন (Reports)',
-    nav_campaigns: 'প্রচারণা (Campaigns)',
-    nav_pricing: 'মূল্য নির্ধারণ (Pricing)',
-    nav_bookings: 'বুকিং (Bookings)',
-    nav_vendors: 'বিক্রেতা (Vendors)',
-    nav_settings: 'সেটিংস (Settings)',
-    nav_logout: 'লগআউট করুন',
-    lang_title: 'Language / ভাষা',
-    lang_desc: 'Dashboard-এর জন্য আপনার পছন্দের ভাষা বেছে নিন।',
-    lang_select_label: 'ইন্টারফেস ভাষা',
-    lang_select_hint: 'Sidebar এবং UI লেবেল পরিবর্তন করে',
+    nav_conversations: 'কথোপকথন', nav_leads: 'লিড', nav_reports: 'প্রতিবেদন',
+    nav_campaigns: 'প্রচারণা', nav_pricing: 'মূল্য নির্ধারণ', nav_bookings: 'বুকিং',
+    nav_vendors: 'বিক্রেতা', nav_settings: 'সেটিংস', nav_logout: 'লগআউট করুন',
+    lang_title: 'Language / ভাষা', lang_desc: 'Dashboard-এর জন্য আপনার পছন্দের ভাষা বেছে নিন।',
+    lang_select_label: 'ইন্টারফেস ভাষা', lang_select_hint: 'Sidebar এবং UI লেবেল পরিবর্তন করে',
     settings_subtitle: 'Dashboard কনফিগারেশন',
+    conv_title: 'কথোপকথন (Conversations)', search_ph: 'খুঁজুন...', filter_all: 'সব',
+    stat_queries: 'অনুসন্ধান', period_today: 'আজ', period_week: 'সপ্তাহ', period_month: 'মাস', period_year: 'বছর',
+    btn_new_lead: '+ নতুন লিড',
+    stage_all: '📋 সব Stages', stage_new_query: '📩 নতুন অনুসন্ধান', stage_quote_sent: '💬 কোটেশন পাঠানো হয়েছে',
+    stage_changes: '🔄 পরিবর্তন দরকার', stage_follow_up: '📞 ফলো আপ',
+    stage_booking_confirmed: '✅ বুকিং নিশ্চিত', stage_advance: '💰 অগ্রিম পাওয়া গেছে',
+    stage_voucher: '🎫 ভাউচার পাঠানো হয়েছে', stage_completed: '🏁 সম্পন্ন', stage_lost: '❌ হয়নি',
+    camp_title: 'প্রচারণা (Campaigns)', camp_subtitle: 'WhatsApp broadcast campaigns ও contacts পরিচালনা করুন',
+    camp_tab_contacts: '👥 যোগাযোগ (Contacts)', camp_tab_campaigns: '📢 প্রচারণা (Campaigns)',
+    contact_search_ph: 'নাম, ফোন, কোম্পানি...', all_sources: 'সব Sources',
+    col_name: 'নাম (Name)', btn_new_campaign: '+ নতুন প্রচারণা', btn_refresh: '🔄 রিফ্রেশ',
+    bookings_title: 'নিশ্চিত বুকিং', bookings_subtitle: 'সব confirmed bookings দেখুন ও পরিচালনা করুন',
+    btn_new_booking: '+ নতুন বুকিং', all_status: '📊 সব Status',
+    all_destinations: '🗺️ সব Destinations', all_staff: '👤 সব Staff',
+    pricing_title: 'মূল্য নির্ধারণ (Pricing)', pricing_subtitle: 'Google Sheets থেকে pricing sync করুন',
+    all_star: '⭐ সব Star', all_category: '📁 সব Category',
+    vendors_title: 'বিক্রেতা (Vendors)', vendors_subtitle: 'Vendor master list পরিচালনা করুন',
+    btn_new_vendor: '+ নতুন Vendor', all_categories: '📁 সব Categories',
   },
   ta: {
-    nav_conversations: 'உரையாடல்கள் (Conversations)',
-    nav_leads: 'லீட்கள் (Leads)',
-    nav_reports: 'அறிக்கைகள் (Reports)',
-    nav_campaigns: 'பிரச்சாரங்கள் (Campaigns)',
-    nav_pricing: 'விலை நிர்ணயம் (Pricing)',
-    nav_bookings: 'முன்பதிவுகள் (Bookings)',
-    nav_vendors: 'விற்பனையாளர்கள் (Vendors)',
-    nav_settings: 'அமைப்புகள் (Settings)',
-    nav_logout: 'வெளியேறு',
-    lang_title: 'Language / மொழி',
-    lang_desc: 'Dashboard-க்கான உங்கள் விருப்பமான மொழியை தேர்வு செய்யுங்கள்.',
-    lang_select_label: 'இடைமுக மொழி',
-    lang_select_hint: 'Sidebar மற்றும் UI லேபல்களை மாற்றுகிறது',
+    nav_conversations: 'உரையாடல்கள்', nav_leads: 'லீட்கள்', nav_reports: 'அறிக்கைகள்',
+    nav_campaigns: 'பிரச்சாரங்கள்', nav_pricing: 'விலை நிர்ணயம்', nav_bookings: 'முன்பதிவுகள்',
+    nav_vendors: 'விற்பனையாளர்கள்', nav_settings: 'அமைப்புகள்', nav_logout: 'வெளியேறு',
+    lang_title: 'Language / மொழி', lang_desc: 'Dashboard-க்கான உங்கள் விருப்பமான மொழியை தேர்வு செய்யுங்கள்.',
+    lang_select_label: 'இடைமுக மொழி', lang_select_hint: 'Sidebar மற்றும் UI லேபல்களை மாற்றுகிறது',
     settings_subtitle: 'Dashboard கட்டமைப்பு',
+    conv_title: 'உரையாடல்கள் (Conversations)', search_ph: 'தேடுங்கள்...', filter_all: 'அனைத்தும்',
+    stat_queries: 'விசாரணைகள்', period_today: 'இன்று', period_week: 'வாரம்', period_month: 'மாதம்', period_year: 'ஆண்டு',
+    btn_new_lead: '+ புதிய லீட்',
+    stage_all: '📋 அனைத்து Stages', stage_new_query: '📩 புதிய விசாரணை', stage_quote_sent: '💬 மேற்கோள் அனுப்பியது',
+    stage_changes: '🔄 மாற்றங்கள் தேவை', stage_follow_up: '📞 பின்தொடர்தல்',
+    stage_booking_confirmed: '✅ முன்பதிவு உறுதி', stage_advance: '💰 முன்பணம் பெறப்பட்டது',
+    stage_voucher: '🎫 வௌச்சர் அனுப்பியது', stage_completed: '🏁 முடிந்தது', stage_lost: '❌ ஆகவில்லை',
+    camp_title: 'பிரச்சாரங்கள் (Campaigns)', camp_subtitle: 'WhatsApp campaigns மற்றும் contacts நிர்வகிக்கவும்',
+    camp_tab_contacts: '👥 தொடர்புகள் (Contacts)', camp_tab_campaigns: '📢 பிரச்சாரங்கள் (Campaigns)',
+    contact_search_ph: 'பெயர், தொலைபேசி, நிறுவனம்...', all_sources: 'அனைத்து Sources',
+    col_name: 'பெயர் (Name)', btn_new_campaign: '+ புதிய பிரச்சாரம்', btn_refresh: '🔄 புதுப்பி',
+    bookings_title: 'உறுதி செய்யப்பட்ட முன்பதிவுகள்', bookings_subtitle: 'அனைத்து confirmed bookings பார்க்கவும்',
+    btn_new_booking: '+ புதிய முன்பதிவு', all_status: '📊 அனைத்து Status',
+    all_destinations: '🗺️ அனைத்து இடங்கள்', all_staff: '👤 அனைத்து Staff',
+    pricing_title: 'விலை நிர்ணயம் (Pricing)', pricing_subtitle: 'Google Sheets இலிருந்து pricing sync செய்யுங்கள்',
+    all_star: '⭐ அனைத்து Star', all_category: '📁 அனைத்து Category',
+    vendors_title: 'விற்பனையாளர்கள் (Vendors)', vendors_subtitle: 'Vendor பட்டியல் நிர்வகிக்கவும்',
+    btn_new_vendor: '+ புதிய Vendor', all_categories: '📁 அனைத்து Categories',
   },
   te: {
-    nav_conversations: 'సంభాషణలు (Conversations)',
-    nav_leads: 'లీడ్స్ (Leads)',
-    nav_reports: 'నివేదికలు (Reports)',
-    nav_campaigns: 'ప్రచారాలు (Campaigns)',
-    nav_pricing: 'ధర నిర్ణయం (Pricing)',
-    nav_bookings: 'బుకింగ్‌లు (Bookings)',
-    nav_vendors: 'విక్రేతలు (Vendors)',
-    nav_settings: 'సెట్టింగ్‌లు (Settings)',
-    nav_logout: 'లాగ్ అవుట్',
-    lang_title: 'Language / భాష',
-    lang_desc: 'Dashboard కోసం మీకు నచ్చిన భాషను ఎంచుకోండి.',
-    lang_select_label: 'ఇంటర్‌ఫేస్ భాష',
-    lang_select_hint: 'Sidebar మరియు UI లేబుల్‌లను మారుస్తుంది',
+    nav_conversations: 'సంభాషణలు', nav_leads: 'లీడ్స్', nav_reports: 'నివేదికలు',
+    nav_campaigns: 'ప్రచారాలు', nav_pricing: 'ధర నిర్ణయం', nav_bookings: 'బుకింగ్‌లు',
+    nav_vendors: 'విక్రేతలు', nav_settings: 'సెట్టింగ్‌లు', nav_logout: 'లాగ్ అవుట్',
+    lang_title: 'Language / భాష', lang_desc: 'Dashboard కోసం మీకు నచ్చిన భాషను ఎంచుకోండి.',
+    lang_select_label: 'ఇంటర్‌ఫేస్ భాష', lang_select_hint: 'Sidebar మరియు UI లేబుల్‌లను మారుస్తుంది',
     settings_subtitle: 'Dashboard కాన్ఫిగరేషన్',
+    conv_title: 'సంభాషణలు (Conversations)', search_ph: 'వెతకండి...', filter_all: 'అన్నీ',
+    stat_queries: 'విచారణలు', period_today: 'ఈరోజు', period_week: 'వారం', period_month: 'నెల', period_year: 'సంవత్సరం',
+    btn_new_lead: '+ కొత్త లీడ్',
+    stage_all: '📋 అన్ని Stages', stage_new_query: '📩 కొత్త విచారణ', stage_quote_sent: '💬 కోటేషన్ పంపారు',
+    stage_changes: '🔄 మార్పులు కావాలి', stage_follow_up: '📞 ఫాలో అప్',
+    stage_booking_confirmed: '✅ బుకింగ్ నిర్ధారణ', stage_advance: '💰 అడ్వాన్స్ వచ్చింది',
+    stage_voucher: '🎫 వోచర్ పంపారు', stage_completed: '🏁 పూర్తయింది', stage_lost: '❌ కాలేదు',
+    camp_title: 'ప్రచారాలు (Campaigns)', camp_subtitle: 'WhatsApp campaigns మరియు contacts నిర్వహించండి',
+    camp_tab_contacts: '👥 పరిచయాలు (Contacts)', camp_tab_campaigns: '📢 ప్రచారాలు (Campaigns)',
+    contact_search_ph: 'పేరు, ఫోన్, కంపెనీ...', all_sources: 'అన్ని Sources',
+    col_name: 'పేరు (Name)', btn_new_campaign: '+ కొత్త ప్రచారం', btn_refresh: '🔄 రిఫ్రెష్',
+    bookings_title: 'నిర్ధారించిన బుకింగ్‌లు', bookings_subtitle: 'అన్ని confirmed bookings చూడండి',
+    btn_new_booking: '+ కొత్త బుకింగ్', all_status: '📊 అన్ని Status',
+    all_destinations: '🗺️ అన్ని గమ్యాలు', all_staff: '👤 అన్ని Staff',
+    pricing_title: 'ధర నిర్ణయం (Pricing)', pricing_subtitle: 'Google Sheets నుండి pricing sync చేయండి',
+    all_star: '⭐ అన్ని Star', all_category: '📁 అన్ని Category',
+    vendors_title: 'విక్రేతలు (Vendors)', vendors_subtitle: 'Vendor జాబితా నిర్వహించండి',
+    btn_new_vendor: '+ కొత్త Vendor', all_categories: '📁 అన్ని Categories',
   },
   kn: {
-    nav_conversations: 'ಸಂಭಾಷಣೆಗಳು (Conversations)',
-    nav_leads: 'ಲೀಡ್ಸ್ (Leads)',
-    nav_reports: 'ವರದಿಗಳು (Reports)',
-    nav_campaigns: 'ಪ್ರಚಾರಗಳು (Campaigns)',
-    nav_pricing: 'ಬೆಲೆ ನಿರ್ಧಾರ (Pricing)',
-    nav_bookings: 'ಬುಕಿಂಗ್‌ಗಳು (Bookings)',
-    nav_vendors: 'ಮಾರಾಟಗಾರರು (Vendors)',
-    nav_settings: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು (Settings)',
-    nav_logout: 'ಲಾಗ್ ಔಟ್',
-    lang_title: 'Language / ಭಾಷೆ',
-    lang_desc: 'Dashboard ಗಾಗಿ ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆರಿಸಿ.',
-    lang_select_label: 'ಇಂಟರ್‌ಫೇಸ್ ಭಾಷೆ',
-    lang_select_hint: 'Sidebar ಮತ್ತು UI ಲೇಬಲ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತದೆ',
+    nav_conversations: 'ಸಂಭಾಷಣೆಗಳು', nav_leads: 'ಲೀಡ್ಸ್', nav_reports: 'ವರದಿಗಳು',
+    nav_campaigns: 'ಪ್ರಚಾರಗಳು', nav_pricing: 'ಬೆಲೆ ನಿರ್ಧಾರ', nav_bookings: 'ಬುಕಿಂಗ್‌ಗಳು',
+    nav_vendors: 'ಮಾರಾಟಗಾರರು', nav_settings: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು', nav_logout: 'ಲಾಗ್ ಔಟ್',
+    lang_title: 'Language / ಭಾಷೆ', lang_desc: 'Dashboard ಗಾಗಿ ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆರಿಸಿ.',
+    lang_select_label: 'ಇಂಟರ್‌ಫೇಸ್ ಭಾಷೆ', lang_select_hint: 'Sidebar ಮತ್ತು UI ಲೇಬಲ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತದೆ',
     settings_subtitle: 'Dashboard ಕಾನ್ಫಿಗರೇಶನ್',
+    conv_title: 'ಸಂಭಾಷಣೆಗಳು (Conversations)', search_ph: 'ಹುಡುಕಿ...', filter_all: 'ಎಲ್ಲಾ',
+    stat_queries: 'ವಿಚಾರಣೆಗಳು', period_today: 'ಇಂದು', period_week: 'ವಾರ', period_month: 'ತಿಂಗಳು', period_year: 'ವರ್ಷ',
+    btn_new_lead: '+ ಹೊಸ ಲೀಡ್',
+    stage_all: '📋 ಎಲ್ಲಾ Stages', stage_new_query: '📩 ಹೊಸ ವಿಚಾರಣೆ', stage_quote_sent: '💬 ಕೋಟೇಶನ್ ಕಳಿಸಿದೆ',
+    stage_changes: '🔄 ಬದಲಾವಣೆ ಬೇಕು', stage_follow_up: '📞 ಫಾಲೋ ಅಪ್',
+    stage_booking_confirmed: '✅ ಬುಕಿಂಗ್ ದೃಢಪಡಿಸಿದೆ', stage_advance: '💰 ಮುಂಗಡ ಪಡೆದಿದೆ',
+    stage_voucher: '🎫 ವೌಚರ್ ಕಳಿಸಿದೆ', stage_completed: '🏁 ಪೂರ್ಣ', stage_lost: '❌ ಆಗಲಿಲ್ಲ',
+    camp_title: 'ಪ್ರಚಾರಗಳು (Campaigns)', camp_subtitle: 'WhatsApp campaigns ಮತ್ತು contacts ನಿರ್ವಹಿಸಿ',
+    camp_tab_contacts: '👥 ಸಂಪರ್ಕಗಳು (Contacts)', camp_tab_campaigns: '📢 ಪ್ರಚಾರಗಳು (Campaigns)',
+    contact_search_ph: 'ಹೆಸರು, ಫೋನ್, ಕಂಪನಿ...', all_sources: 'ಎಲ್ಲಾ Sources',
+    col_name: 'ಹೆಸರು (Name)', btn_new_campaign: '+ ಹೊಸ ಪ್ರಚಾರ', btn_refresh: '🔄 ರಿಫ್ರೆಶ್',
+    bookings_title: 'ದೃಢಪಡಿಸಿದ ಬುಕಿಂಗ್‌ಗಳು', bookings_subtitle: 'ಎಲ್ಲಾ confirmed bookings ನೋಡಿ',
+    btn_new_booking: '+ ಹೊಸ ಬುಕಿಂಗ್', all_status: '📊 ಎಲ್ಲಾ Status',
+    all_destinations: '🗺️ ಎಲ್ಲಾ Destinations', all_staff: '👤 ಎಲ್ಲಾ Staff',
+    pricing_title: 'ಬೆಲೆ ನಿರ್ಧಾರ (Pricing)', pricing_subtitle: 'Google Sheets ನಿಂದ pricing sync ಮಾಡಿ',
+    all_star: '⭐ ಎಲ್ಲಾ Star', all_category: '📁 ಎಲ್ಲಾ Category',
+    vendors_title: 'ಮಾರಾಟಗಾರರು (Vendors)', vendors_subtitle: 'Vendor ಪಟ್ಟಿ ನಿರ್ವಹಿಸಿ',
+    btn_new_vendor: '+ ಹೊಸ Vendor', all_categories: '📁 ಎಲ್ಲಾ Categories',
   },
   pa: {
-    nav_conversations: 'ਗੱਲਬਾਤ (Conversations)',
-    nav_leads: 'ਲੀਡਸ (Leads)',
-    nav_reports: 'ਰਿਪੋਰਟਾਂ (Reports)',
-    nav_campaigns: 'ਮੁਹਿੰਮਾਂ (Campaigns)',
-    nav_pricing: 'ਕੀਮਤ ਨਿਰਧਾਰਨ (Pricing)',
-    nav_bookings: 'ਬੁਕਿੰਗਾਂ (Bookings)',
-    nav_vendors: 'ਵਿਕ੍ਰੇਤਾ (Vendors)',
-    nav_settings: 'ਸੈਟਿੰਗਾਂ (Settings)',
-    nav_logout: 'ਲੌਗਆਉਟ ਕਰੋ',
-    lang_title: 'Language / ਭਾਸ਼ਾ',
-    lang_desc: 'Dashboard ਲਈ ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਚੁਣੋ।',
-    lang_select_label: 'ਇੰਟਰਫੇਸ ਭਾਸ਼ਾ',
-    lang_select_hint: 'Sidebar ਅਤੇ UI ਲੇਬਲ ਬਦਲਦਾ ਹੈ',
+    nav_conversations: 'ਗੱਲਬਾਤ', nav_leads: 'ਲੀਡਸ', nav_reports: 'ਰਿਪੋਰਟਾਂ',
+    nav_campaigns: 'ਮੁਹਿੰਮਾਂ', nav_pricing: 'ਕੀਮਤ ਨਿਰਧਾਰਨ', nav_bookings: 'ਬੁਕਿੰਗਾਂ',
+    nav_vendors: 'ਵਿਕ੍ਰੇਤਾ', nav_settings: 'ਸੈਟਿੰਗਾਂ', nav_logout: 'ਲੌਗਆਉਟ ਕਰੋ',
+    lang_title: 'Language / ਭਾਸ਼ਾ', lang_desc: 'Dashboard ਲਈ ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਚੁਣੋ।',
+    lang_select_label: 'ਇੰਟਰਫੇਸ ਭਾਸ਼ਾ', lang_select_hint: 'Sidebar ਅਤੇ UI ਲੇਬਲ ਬਦਲਦਾ ਹੈ',
     settings_subtitle: 'Dashboard ਕੌਨਫਿਗਰੇਸ਼ਨ',
+    conv_title: 'ਗੱਲਬਾਤ (Conversations)', search_ph: 'ਖੋਜੋ...', filter_all: 'ਸਾਰੇ',
+    stat_queries: 'ਪੁੱਛਗਿੱਛ', period_today: 'ਅੱਜ', period_week: 'ਹਫ਼ਤਾ', period_month: 'ਮਹੀਨਾ', period_year: 'ਸਾਲ',
+    btn_new_lead: '+ ਨਵੀਂ ਲੀਡ',
+    stage_all: '📋 ਸਾਰੇ Stages', stage_new_query: '📩 ਨਵੀਂ ਪੁੱਛਗਿੱਛ', stage_quote_sent: '💬 ਕੋਟੇਸ਼ਨ ਭੇਜਿਆ',
+    stage_changes: '🔄 ਬਦਲਾਅ ਚਾਹੀਦੇ', stage_follow_up: '📞 ਫਾਲੋ ਅੱਪ',
+    stage_booking_confirmed: '✅ ਬੁਕਿੰਗ ਕਨਫਰਮ', stage_advance: '💰 ਐਡਵਾਂਸ ਮਿਲਿਆ',
+    stage_voucher: '🎫 ਵਾਊਚਰ ਭੇਜਿਆ', stage_completed: '🏁 ਪੂਰਾ ਹੋਇਆ', stage_lost: '❌ ਨਹੀਂ ਬਣਿਆ',
+    camp_title: 'ਮੁਹਿੰਮਾਂ (Campaigns)', camp_subtitle: 'WhatsApp campaigns ਅਤੇ contacts ਪ੍ਰਬੰਧ ਕਰੋ',
+    camp_tab_contacts: '👥 ਸੰਪਰਕ (Contacts)', camp_tab_campaigns: '📢 ਮੁਹਿੰਮਾਂ (Campaigns)',
+    contact_search_ph: 'ਨਾਮ, ਫੋਨ, ਕੰਪਨੀ...', all_sources: 'ਸਾਰੇ Sources',
+    col_name: 'ਨਾਮ (Name)', btn_new_campaign: '+ ਨਵੀਂ ਮੁਹਿੰਮ', btn_refresh: '🔄 ਰਿਫ੍ਰੈਸ਼',
+    bookings_title: 'ਕਨਫਰਮ ਬੁਕਿੰਗਾਂ', bookings_subtitle: 'ਸਾਰੀਆਂ confirmed bookings ਦੇਖੋ',
+    btn_new_booking: '+ ਨਵੀਂ ਬੁਕਿੰਗ', all_status: '📊 ਸਾਰੇ Status',
+    all_destinations: '🗺️ ਸਾਰੇ Destinations', all_staff: '👤 ਸਾਰਾ Staff',
+    pricing_title: 'ਕੀਮਤ ਨਿਰਧਾਰਨ (Pricing)', pricing_subtitle: 'Google Sheets ਤੋਂ pricing sync ਕਰੋ',
+    all_star: '⭐ ਸਾਰੇ Star', all_category: '📁 ਸਾਰੀਆਂ Category',
+    vendors_title: 'ਵਿਕ੍ਰੇਤਾ (Vendors)', vendors_subtitle: 'Vendor ਮਾਸਟਰ ਲਿਸਟ ਪ੍ਰਬੰਧ ਕਰੋ',
+    btn_new_vendor: '+ ਨਵਾਂ Vendor', all_categories: '📁 ਸਾਰੀਆਂ Categories',
   },
 };
 
@@ -5663,6 +5761,10 @@ function applyLanguage(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (t[key]) el.textContent = t[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) el.placeholder = '🔍 ' + t[key];
   });
   document.documentElement.lang = lang;
   const sel = document.getElementById('languageSelector');
